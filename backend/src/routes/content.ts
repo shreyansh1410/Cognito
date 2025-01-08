@@ -1,6 +1,5 @@
 import express from "express";
 import { Request, Response } from "../index";
-import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import zod from "zod";
 import { User, Content, Tag, Link } from "../utils/db";
@@ -10,7 +9,6 @@ import mongoose from "mongoose";
 dotenv.config();
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || "";
 
 const createContentBody = zod.object({
   type: zod.string().nonempty(),
@@ -119,6 +117,36 @@ router.get(
       });
     } catch {
       return res.status(500).json({ msg: "Error fetching users" });
+    }
+  }
+);
+
+router.delete(
+  "/",
+  userMiddleware,
+  async (req: Request, res: Response): Promise<any> => {
+    try {
+      const { contentId } = req.body;
+      if (!contentId) {
+        return res.status(400).json({ message: "Content ID is required" });
+      }
+      const userId = req.user?.id;
+      const content = await Content.findOneAndDelete({
+        id: req.body.contendId,
+        userId: userId, // Ensure the content belongs to the authenticated user
+      });
+      if (!content) {
+        return res
+          .status(404)
+          .json({ message: "Content not found or you are not authorized" });
+      }
+      return res.status(200).json({ message: "Content deleted successfully" });
+    } catch (err) {
+      console.log(err);
+      return res.status(403).json({
+        msg: "Delete failed",
+        error: err,
+      });
     }
   }
 );
