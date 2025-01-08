@@ -1,80 +1,126 @@
-import express, { Request, Response } from "express";
+import express from "express";
+import { Request, Response } from "../index";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import zod from "zod";
 import { User, Content, Tag, Link } from "../utils/db";
+import { userMiddleware } from "../middlewares/authMiddleware";
+import mongoose from "mongoose";
 
 dotenv.config();
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "";
 
-const signupBody = zod.object({
-  username: zod.string().email(),
-  firstName: zod.string(),
-  lastName: zod.string(),
-  password: zod.string(),
+const createContentBody = zod.object({
+  type: zod.string().nonempty(),
+  link: zod.string().url(),
+  title: zod.string().nonempty(),
+  tags: zod.array(zod.string().optional()),
 });
 
 const signinBody = zod.object({
-  username: zod.string().email(),
+  username: zod.string(),
   password: zod.string(),
 });
 
-router.post("/signup", async (req: Request, res: Response): Promise<any> => {
-  const { username, password } = req.body;
-
-  const { success } = signupBody.safeParse(req.body);
-  if (!success) return res.status(411).json({ msg: "Invalid input" });
-
-  try {
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      return res.status(400).json({ msg: "User already exists" });
+router.post(
+  "/create",
+  userMiddleware,
+  async (req: Request, res: Response): Promise<any> => {
+    const parseResult = createContentBody.safeParse(req.body);
+    if (!parseResult.success) {
+      return res
+        .status(400)
+        .json({ msg: "Invalid input", error: parseResult.error.errors });
     }
+    const { type, link, title, tags } = parseResult.data;
 
-    const user = new User({ username, password });
+    try {
+      if (!req.user) {
+        return res.status(401).json({ msg: "Unauthorized" });
+      }
+      // Check if the link already exists in the database
+      let existingLink = await Link.findOne({ link }); // Look for the link in the database
+      if (!existingLink) {
+        // If the link doesn't exist, create a new one
+        existingLink = new Link({
+          link,
+          userId: req.user.id,
+        });
+        await existingLink.save(); // Save the new link
+      }
+      const tagIds: mongoose.Types.ObjectId[] = [];
+      if (tags) {
+        for (const tagName of tags) {
+          let tag = await Tag.findOne({ name: tagName });
+          if (!tag) {
+            // Create a new tag if it doesn't exist
+            tag = new Tag({ title: tagName });
+            await tag.save();
+          }
+          tagIds.push(tag._id);
+        }
+      }
 
-    await user.save();
+      const content = new Content({
+        type,
+        link,
+        title,
+        tags: tagIds,
+        userId: req.user.id, // Associate content with the authenticated user
+      });
 
-    const token = jwt.sign(
-      { id: user._id, username: user.username },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+      await content.save();
 
-    return res.json({ msg: "User created successfully", token });
-  } catch (err: any) {
-    return res
-      .status(500)
-      .json({ msg: "Error creating user", error: err.message });
+      return res.status(200).json({
+        msg: "Content created successfully",
+        content: {
+          id: content._id,
+          type: content.type,
+          title: content.title,
+          link: content.link,
+          tags: content.tags || [],
+        },
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        // If the error is an instance of Error, you can access its properties
+        console.error(err.message); // You can also use `err.stack` for stack trace if needed
+        return res
+          .status(500)
+          .json({ msg: "Error creating content", error: err.message });
+      } else {
+        // If it's not an instance of Error, return a generic message
+        console.error(err);
+        return res.status(500).json({
+          msg: "Error creating content",
+          error: "An unexpected error occurred",
+        });
+      }
+    }
   }
-});
+);
 
-router.post("/signin", async (req: Request, res: Response): Promise<any> => {
-  const { username, password } = req.body;
-
-  const { success } = signinBody.safeParse(req.body);
-  if (!success) return res.status(411).json({ msg: "Invalid input" });
-
-  try {
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(411).json({ msg: "User not found" });
+router.get(
+  "/",
+  userMiddleware,
+  async (req: Request, res: Response): Promise<any> => {
+    try {
+      const content = await Content.find({}, "_id type title tags userId");
+      return res.status(200).json({
+        content: content.map((single) => ({
+          id: single._id,
+          type: single.type,
+          title: single.title,
+          tags: single.tags,
+          link: single.link,
+        })),
+      });
+    } catch {
+      return res.status(500).json({ msg: "Error fetching users" });
     }
-
-    if (password !== user.password) {
-      return res.status(401).json({ msg: "Invalid credentials" });
-    }
-
-    const token = jwt.sign({ id: user._id, name: user.username }, JWT_SECRET, {
-      expiresIn: "1h",
-    });
-
-    return res.json({ token });
-  } catch (err: any) {
-    return res.json({ msg: "Error signing in", error: err.message });
   }
-});
+);
 
 export default router;

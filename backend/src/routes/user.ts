@@ -10,22 +10,23 @@ const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "";
 
 const signupBody = zod.object({
-  username: zod.string().email(),
-  firstName: zod.string(),
-  lastName: zod.string(),
+  username: zod.string(),
   password: zod.string(),
 });
 
 const signinBody = zod.object({
-  username: zod.string().email(),
+  username: zod.string(),
   password: zod.string(),
 });
 
-router.post("/signup", async (req: Request, res: Response): Promise<any> => {
-  const { username, password } = req.body;
+router.get("/", (req: Request, res: Response) => {
+  res.send("Hello World!");
+});
 
+router.post("/signup", async (req: Request, res: Response): Promise<any> => {
   const { success } = signupBody.safeParse(req.body);
   if (!success) return res.status(411).json({ msg: "Invalid input" });
+  const { username, password } = req.body;
 
   try {
     const existingUser = await User.findOne({ username });
