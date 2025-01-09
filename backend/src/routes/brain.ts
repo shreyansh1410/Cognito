@@ -69,4 +69,48 @@ router.post(
   }
 );
 
+router.get(
+  "/:shareLink",
+  userMiddleware,
+  async (req: Request, res: Response): Promise<any> => {
+    if (!req.user?.id)
+      return res.status(404).json({
+        msg: "Please log in to see the brain",
+      });
+    try {
+      const {shareLink} = req.params;
+      const link = await Link.findOne({
+        hash: shareLink,
+      });
+
+      if (!link) {
+        return res.status(404).json({
+          msg: "User not found",
+        });
+      }
+      const userId = link.userId;
+      const contents = await Content.find({
+        userId: link.userId,
+      }).populate("tags", "title");
+
+      if (!contents) {
+        return res.status(500).json({
+          msg: "User does not have any content",
+        });
+      }
+
+      return res.status(200).json({
+        contents: contents.map((content) => ({
+          type: content.type,
+          title: content.title,
+          link: content.link,
+          tags: content.tags,
+        })),
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+);
+
 export default router;
