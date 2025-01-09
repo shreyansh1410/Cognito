@@ -11,15 +11,15 @@ dotenv.config();
 const router = express.Router();
 
 const createContentBody = zod.object({
-  type: zod.string().nonempty(),
+  type: zod.enum(["image", "video", "article", "audio"], {
+    errorMap: () => ({
+      message:
+        "Invalid content type. Allowed types are: image, video, article, audio",
+    }),
+  }),
   link: zod.string().url(),
   title: zod.string().nonempty(),
   tags: zod.array(zod.string().optional()),
-});
-
-const signinBody = zod.object({
-  username: zod.string(),
-  password: zod.string(),
 });
 
 router.post(
@@ -28,9 +28,13 @@ router.post(
   async (req: Request, res: Response): Promise<any> => {
     const parseResult = createContentBody.safeParse(req.body);
     if (!parseResult.success) {
-      return res
-        .status(400)
-        .json({ msg: "Invalid input", error: parseResult.error.errors });
+      // Get the first error message
+      const errorMessage =
+        parseResult.error.errors[0]?.message || "Invalid input";
+      return res.status(400).json({
+        msg: "Validation failed",
+        error: errorMessage,
+      });
     }
     const { type, link, title, tags } = parseResult.data;
 
@@ -38,28 +42,28 @@ router.post(
       if (!req.user) {
         return res.status(401).json({ msg: "Unauthorized" });
       }
-      // Check if the link already exists in the database
-      let existingLink = await Link.findOne({ link }); // Look for the link in the database
+      // Check if the link already exists
+      let existingLink = await Link.findOne({ link });
       if (!existingLink) {
-        // If the link doesn't exist, create a new one
         existingLink = new Link({
           link,
           userId: req.user.id,
         });
-        await existingLink.save(); // Save the new link
+        await existingLink.save();
       }
-      const tagIds: mongoose.Types.ObjectId[] = [];
-      if (tags) {
-        for (const tagName of tags) {
-          let tag = await Tag.findOne({ name: tagName });
-          if (!tag) {
-            // Create a new tag if it doesn't exist
-            tag = new Tag({ title: tagName });
-            await tag.save();
-          }
-          tagIds.push(tag._id);
-        }
-      }
+
+      // Modified tag handling - use findOneAndUpdate with upsert
+      const tagIds = await Promise.all(
+        (tags || []).map(async (tagName) => {
+          // Use findOneAndUpdate with upsert to either find or create the tag
+          const tag = await Tag.findOneAndUpdate(
+            { title: tagName },
+            { title: tagName },
+            { upsert: true, new: true }
+          );
+          return tag._id;
+        })
+      );
 
       const content = new Content({
         type,
@@ -83,13 +87,11 @@ router.post(
       });
     } catch (err) {
       if (err instanceof Error) {
-        // If the error is an instance of Error, you can access its properties
-        console.error(err.message); // You can also use `err.stack` for stack trace if needed
+        console.error(err.message);
         return res
           .status(500)
           .json({ msg: "Error creating content", error: err.message });
       } else {
-        // If it's not an instance of Error, return a generic message
         console.error(err);
         return res.status(500).json({
           msg: "Error creating content",

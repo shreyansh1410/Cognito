@@ -2,6 +2,7 @@ import express from "express";
 import { Request, Response } from "../index";
 import userRouter from "./user";
 import contentRouter from "./content";
+import brainRouter from "./brain";
 
 const router = express.Router();
 // Define user-related routes
@@ -12,5 +13,6 @@ router.get("/", (req: Request, res: Response) => {
 
 router.use("/user", userRouter);
 router.use("/content", contentRouter);
+router.use("/brain", brainRouter);
 
 export { router };

@@ -2,12 +2,22 @@ import express, { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import zod from "zod";
-import { User } from "../utils/db";
+import { Link, User } from "../utils/db";
 
 dotenv.config();
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "";
+
+export function generateHash(): string {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let hash = "";
+  for (let i = 0; i < 10; i++) {
+    hash += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return hash;
+}
 
 const signupBody = zod.object({
   username: zod.string(),
@@ -38,13 +48,25 @@ router.post("/signup", async (req: Request, res: Response): Promise<any> => {
 
     await user.save();
 
-    const token = jwt.sign(
-      { id: user._id, username: user.username },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const hash = generateHash();
+    console.log("Generated hash:", hash); // Debug log
 
-    return res.json({ msg: "User created successfully", token });
+    const link = new Link({
+      hash,
+      userId: user._id,
+      isPublic: true,
+    });
+    await link.save();
+
+    console.log("Saved link:", link); // Debug log
+
+    const baseUrl = process.env.BASE_URL || "http://localhost:3000";
+
+    return res.json({
+      msg: "User created successfully proceed to Login",
+      brainLink: `${baseUrl}/brain/${hash}`,
+      hash, // Adding hash for debugging
+    });
   } catch (err: any) {
     return res
       .status(500)
