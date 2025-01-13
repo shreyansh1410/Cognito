@@ -1,9 +1,9 @@
 import express from "express";
-import { Request, Response } from "../index";
+import { Request, Response } from "../../index";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import { userMiddleware } from "../middlewares/authMiddleware";
-import { Content, Link } from "../utils/db";
+import { Content, Link } from "../db";
 import { generateHash } from "./user";
 
 dotenv.config();
@@ -78,7 +78,7 @@ router.get(
         msg: "Please log in to see the brain",
       });
     try {
-      const {shareLink} = req.params;
+      const { shareLink } = req.params;
       const link = await Link.findOne({
         hash: shareLink,
       });

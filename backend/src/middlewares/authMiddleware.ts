@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { Request, Response, NextFunction } from "../index";
+import { Request, Response, NextFunction } from "../../index";
 
 dotenv.config();
 
@@ -13,14 +13,16 @@ export const userMiddleware = (
 ): Promise<void> => {
   const authHeader = req.headers.authorization;
 
-  return new Promise<void>((resolve, reject)=>{
+  return new Promise<void>((resolve, reject) => {
     try {
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(403).json({message:"UNAUTHORIZED"});
+        return res.status(403).json({ message: "UNAUTHORIZED" });
       }
       const token = authHeader.split(" ")[1]; // Extract the token after 'Bearer '
       if (!token)
-        return res.status(401).json({ msg: "Access denied, no token provided" });
+        return res
+          .status(401)
+          .json({ msg: "Access denied, no token provided" });
       const decoded = jwt.verify(token, JWT_SECRET!);
       // console.log(decoded);
       req.user = decoded as { id: string; username: string }; // Attach the user info to the request object
@@ -30,5 +32,5 @@ export const userMiddleware = (
       reject(err);
       return res.status(401).json({ msg: "Invalid token" });
     }
-  })
+  });
 };

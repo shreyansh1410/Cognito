@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import zod from "zod";
-import { Link, User } from "../utils/db";
+import { Link, User } from "../db";
 
 dotenv.config();
 

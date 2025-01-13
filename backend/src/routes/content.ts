@@ -1,8 +1,8 @@
 import express from "express";
-import { Request, Response } from "../index";
+import { Request, Response } from "../../index";
 import dotenv from "dotenv";
 import zod from "zod";
-import { User, Content, Tag, Link } from "../utils/db";
+import { User, Content, Tag, Link } from "../db";
 import { userMiddleware } from "../middlewares/authMiddleware";
 import mongoose from "mongoose";
 

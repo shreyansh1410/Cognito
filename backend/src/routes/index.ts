@@ -1,5 +1,5 @@
 import express from "express";
-import { Request, Response } from "../index";
+import { Request, Response } from "../../index";
 import userRouter from "./user";
 import contentRouter from "./content";
 import brainRouter from "./brain";

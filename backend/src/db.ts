@@ -1,12 +1,15 @@
 import mongoose, { Types } from "mongoose";
 import dotenv from "dotenv";
+import path from "path";
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, "../.env") });
+
+console.log(`inside db: ${process.env.MONGO_URI}`);
 
 mongoose
-  .connect(process.env.MONGO_URI!)
-  .then(() => console.log("connected to db"))
-  .catch((err) => console.log(err));
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.log("MongoDB connection error:", err));
 
 //user schema
 const UserSchema = new mongoose.Schema({

@@ -1,14 +1,13 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
-import mongoose from "mongoose";
 import cors from "cors";
-import jwt from "jsonwebtoken";
 import { router } from "./routes/index";
+import path from "path";
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, "../.env") });
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 
 app.use(cors());
 app.use(express.json());
@@ -19,6 +18,10 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/v1", router);
+
+console.log(process.env.PORT);
+console.log(`mongouri: ${process.env.MONGO_URI}`);
+console.log(`jwtsecret: ${process.env.JWT_SECRET}`);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
