@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import zod from "zod";
 import { Link, User } from "../db";
+import { useAlert } from "react-alert";
 
 dotenv.config();
 
@@ -20,12 +21,12 @@ export function generateHash(): string {
 }
 
 const signupBody = zod.object({
-  username: zod.string(),
+  email: zod.string().email(),
   password: zod.string(),
 });
 
 const signinBody = zod.object({
-  username: zod.string(),
+  username: zod.string().email(),
   password: zod.string(),
 });
 

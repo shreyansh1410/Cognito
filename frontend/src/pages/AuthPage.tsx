@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import { login } from "../store/authSlice";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import { ToastContainer, toast } from "react-toastify";
 import {
   Card,
   CardContent,
@@ -25,6 +26,13 @@ export function AuthPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+  const notify = () => toast("You have been registered!");
+
+  //   const signupsuccess = () => {
+  //     {notify}
+  //     <ToastContainer/>
+  //   }
 
   // Handle form submission for login/signup
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,6 +71,7 @@ export function AuthPage() {
         navigate("/");
       } else {
         console.log("Signup successful");
+        toast.success("Signup successful! You can now log in.");
         setIsLogin(true); // Redirect to login tab after signup
       }
     } catch (error) {
@@ -115,10 +124,6 @@ export function AuthPage() {
               <form onSubmit={handleSubmit}>
                 <div className="grid w-full gap-4">
                   <div className="flex flex-col space-y-1.5">
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" name="name" required />
-                  </div>
-                  <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" name="email" type="email" required />
                   </div>
@@ -152,6 +157,7 @@ export function AuthPage() {
           </p>
         </CardFooter>
       </Card>
+      <ToastContainer />
     </div>
   );
 }
