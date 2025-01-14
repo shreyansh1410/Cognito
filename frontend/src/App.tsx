@@ -14,7 +14,9 @@ import "./App.css";
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { isAuthenticated } = useAuth();
+  let { isAuthenticated } = useAuth();
+  const token = localStorage.getItem("token");
+  if (token) isAuthenticated = true;
   return isAuthenticated ? <>{children}</> : <Navigate to="/auth" />;
 };
 

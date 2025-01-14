@@ -46,6 +46,7 @@ export function AuthPage() {
 
         const data = await response.json();
         const token = data.token; // Assuming the backend responds with a token
+        localStorage.setItem("token", token);
         login(username, token);
         navigate("/");
       } else {
