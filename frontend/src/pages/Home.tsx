@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NoteCard } from "../components/NoteCard";
-import { fetchContent } from "../services/api";
+import { fetchContent, deleteContent } from "../services/api";
 
 interface Content {
   id: string;
@@ -47,6 +47,22 @@ export function Home() {
     loadContent();
   }, []);
 
+  const handleDelete = async (id: string) => {
+    const userConfirmed = window.confirm(
+      "Are you sure you want to delete this note?"
+    );
+
+    if (!userConfirmed) return;
+
+    try {
+      await deleteContent(id); // API call to delete content
+      setContent((prev) => prev.filter((item) => item.id !== id)); // Update UI
+    } catch (err) {
+      console.error("Error deleting content:", err);
+      alert("Failed to delete content. Please try again.");
+    }
+  };
+
   if (isLoading) {
     return <div className="text-center mt-8">Loading...</div>;
   }
@@ -66,9 +82,7 @@ export function Home() {
           tags={item.tags}
           date={item.date}
           content={`Link: ${item.link}`}
-          onDelete={() => {
-            setContent(content.filter((c) => c.id !== item.id));
-          }}
+          onDelete={()=>handleDelete(item.id)}
         />
       ))}
     </div>

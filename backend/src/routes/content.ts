@@ -129,6 +129,8 @@ router.get(
   }
 );
 
+
+
 router.delete(
   "/",
   userMiddleware,
@@ -140,7 +142,7 @@ router.delete(
       }
       const userId = req.user?.id;
       const content = await Content.findOneAndDelete({
-        id: req.body.contendId,
+        _id: contentId,
         userId: userId, // Ensure the content belongs to the authenticated user
       });
       if (!content) {
