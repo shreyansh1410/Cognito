@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../store";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { AddContentModal } from "./AddContentModal";
 
 export function Layout() {
   const isSidebarCollapsed = useSelector(
@@ -14,7 +15,7 @@ export function Layout() {
       <Sidebar />
       <main
         className={`flex-1 overflow-auto transition-all duration-300 ${
-          isSidebarCollapsed ? "ml-16" : "ml-20"
+          isSidebarCollapsed ? "ml-16" : "ml-18"
         }`}
       >
         <Header />
@@ -22,6 +23,7 @@ export function Layout() {
           <Outlet />
         </div>
       </main>
+      <AddContentModal />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Share2, Trash2, FileText, Twitter, Youtube } from "lucide-react";
 
 interface NoteCardProps {
+  id: string;
   title: string;
   content?: string;
   type: "document" | "tweet" | "video";

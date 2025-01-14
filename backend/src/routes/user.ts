@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import zod from "zod";
 import { Link, User } from "../db";
-import { useAlert } from "react-alert";
 
 dotenv.config();
 

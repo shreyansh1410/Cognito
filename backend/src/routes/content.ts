@@ -52,14 +52,13 @@ router.post(
         await existingLink.save();
       }
 
-      // Modified tag handling - use findOneAndUpdate with upsert
       const tagIds = await Promise.all(
         (tags || []).map(async (tagName) => {
           // Use findOneAndUpdate with upsert to either find or create the tag
           const tag = await Tag.findOneAndUpdate(
             { title: tagName },
             { title: tagName },
-            { upsert: true, new: true }
+            { upsert: true, new: true } //The upsert = true option creates the object if it doesn't exist. defaults to false.
           );
           return tag._id;
         })

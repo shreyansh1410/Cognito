@@ -40,7 +40,7 @@ export function Sidebar() {
           }`}
         >
           <Brain className="h-8 w-8 text-indigo-600" />
-          <span className="text-xl font-bold">Second Brain</span>
+          <span className="text-xl font-bold">Cognito</span>
         </div>
         <button
           onClick={() => dispatch(toggleSidebar())}
@@ -48,6 +48,7 @@ export function Sidebar() {
         >
           {isSidebarCollapsed ? <ChevronRight /> : <ChevronLeft />}
         </button>
+        
       </div>
       <nav className="flex-1 px-2 py-4">
         {navigation.map((item) => (

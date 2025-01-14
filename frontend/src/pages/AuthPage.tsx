@@ -27,14 +27,6 @@ export function AuthPage() {
   const dispatch = useDispatch();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-  const notify = () => toast("You have been registered!");
-
-  //   const signupsuccess = () => {
-  //     {notify}
-  //     <ToastContainer/>
-  //   }
-
-  // Handle form submission for login/signup
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -72,7 +64,7 @@ export function AuthPage() {
       } else {
         console.log("Signup successful");
         toast.success("Signup successful! You can now log in.");
-        setIsLogin(true); // Redirect to login tab after signup
+        setIsLogin(true);
       }
     } catch (error) {
       console.error("Error during authentication:", error);
