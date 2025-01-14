@@ -3,36 +3,30 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface AuthState {
   isAuthenticated: boolean;
   user: { email: string } | null;
+  token: string | null;
 }
 
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
+  token: localStorage.getItem("token"),
 };
-
-// Check localStorage for saved user data when initializing the state
-const storedUserData = localStorage.getItem("user");
-const parsedUserData = storedUserData ? JSON.parse(storedUserData) : null;
 
 const authSlice = createSlice({
   name: "auth",
-  initialState: parsedUserData
-    ? { isAuthenticated: true, user: parsedUserData }
-    : initialState,
+  initialState,
   reducers: {
     login: (state, action: PayloadAction<{ email: string; token: string }>) => {
       state.isAuthenticated = true;
-      state.user = action.payload;
-
-      // Save user data to localStorage
-      localStorage.setItem("user", JSON.stringify(action.payload));
+      state.user = { email: action.payload.email };
+      state.token = action.payload.token;
+      localStorage.setItem("token", action.payload.token);
     },
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = null;
-
-      // Remove user data from localStorage
-      localStorage.removeItem("user");
+      state.token = null;
+      localStorage.removeItem("token");
     },
   },
 });

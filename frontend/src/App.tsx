@@ -5,46 +5,38 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
-import { Provider, useSelector } from "react-redux";
-import { store, RootState } from "./store";
+import { AuthProvider, useAuth } from "./context/authContext";
 import { Layout } from "./components/Layout";
 import { Home } from "./pages/Home";
 import { AuthPage } from "./pages/AuthPage";
 import "./App.css";
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = useSelector(
-    (state: RootState) => state.auth.isAuthenticated
-  );
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const { isAuthenticated } = useAuth();
   return isAuthenticated ? <>{children}</> : <Navigate to="/auth" />;
 };
 
-function AppRoutes() {
-  return (
-    <Routes>
-      <Route path="/auth" element={<AuthPage />} />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<Home />} />
-        {/* Add more protected routes here as needed */}
-      </Route>
-    </Routes>
-  );
-}
-
 function App() {
   return (
-    <Provider store={store}>
+    <AuthProvider>
       <Router>
-        <AppRoutes />
+        <Routes>
+          <Route path="/auth" element={<AuthPage />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Home />} />
+          </Route>
+        </Routes>
       </Router>
-    </Provider>
+    </AuthProvider>
   );
 }
 

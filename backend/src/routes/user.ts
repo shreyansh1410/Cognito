@@ -20,7 +20,7 @@ export function generateHash(): string {
 }
 
 const signupBody = zod.object({
-  email: zod.string().email(),
+  username: zod.string().email(),
   password: zod.string(),
 });
 
@@ -49,7 +49,6 @@ router.post("/signup", async (req: Request, res: Response): Promise<any> => {
     await user.save();
 
     const hash = generateHash();
-    console.log("Generated hash:", hash); // Debug log
 
     const link = new Link({
       hash,
@@ -57,8 +56,6 @@ router.post("/signup", async (req: Request, res: Response): Promise<any> => {
       isPublic: true,
     });
     await link.save();
-
-    console.log("Saved link:", link); // Debug log
 
     const baseUrl = process.env.BASE_URL || "http://localhost:3000";
 

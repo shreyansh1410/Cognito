@@ -1,22 +1,47 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { Share2, Trash2, FileText, Twitter, Youtube } from "lucide-react";
+import {
+  Share2,
+  Trash2,
+  FileText,
+  Twitter,
+  Youtube,
+  Image,
+  FileAudio
+} from "lucide-react";
 
 interface NoteCardProps {
   id: string;
   title: string;
   content?: string;
-  type: "document" | "tweet" | "video";
+  type: "document" | "tweet" | "video" | "image" | "article" | "audio";
   tags: string[];
   date: string;
+  onDelete: () => void;
 }
 
-export function NoteCard({ title, content, type, tags, date }: NoteCardProps) {
+export function NoteCard({
+  id,
+  title,
+  content,
+  type,
+  tags,
+  date,
+  onDelete,
+}: NoteCardProps) {
   const Icon = {
     document: FileText,
     tweet: Twitter,
     video: Youtube,
+    image: Image,
+    article: FileText,
+    audio: FileAudio,
   }[type];
+
+  const handleShare = () => {
+    // Implement share functionality
+    console.log("Share note:", id);
+  };
 
   return (
     <Card>
@@ -28,10 +53,20 @@ export function NoteCard({ title, content, type, tags, date }: NoteCardProps) {
           </div>
         </CardTitle>
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={handleShare}
+          >
             <Share2 className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onDelete}
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>

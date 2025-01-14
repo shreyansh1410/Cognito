@@ -1,27 +1,23 @@
-import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/authContext";
 import { Button } from "./ui/button";
 import { Share2, Plus, LogOut } from "lucide-react";
-import { logout } from "../store/authSlice";
-import { openAddContentModal } from "../store/uiSlice";
-import { RootState } from "../store";
 
-export function Header() {
-  const dispatch = useDispatch();
+interface HeaderProps {
+  openAddContentModal: () => void;
+}
+
+export function Header({ openAddContentModal }: HeaderProps) {
   const navigate = useNavigate();
-  const user = useSelector((state: RootState) => state.auth.user);
+  const { user, logout } = useAuth();
 
   const handleShareBrain = () => {
     // Implement share brain functionality
     console.log("Share brain clicked");
   };
 
-  const handleAddContent = () => {
-    dispatch(openAddContentModal());
-  };
-
   const handleLogout = () => {
-    dispatch(logout());
+    logout();
     navigate("/auth");
   };
 
@@ -38,7 +34,7 @@ export function Header() {
             <Share2 className="h-4 w-4" />
             Share Brain
           </Button>
-          <Button className="gap-2" onClick={handleAddContent}>
+          <Button className="gap-2" onClick={openAddContentModal}>
             <Plus className="h-4 w-4" />
             Add Content
           </Button>

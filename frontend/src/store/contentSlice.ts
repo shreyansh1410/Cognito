@@ -21,11 +21,19 @@ const initialState: ContentState = {
   error: null,
 };
 
+// Helper function to get the token (you can customize this if it's stored elsewhere)
+const getAuthToken = () => localStorage.getItem("token");
+
 export const fetchContents = createAsyncThunk(
   "content/fetchContents",
   async () => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
-    const response = await fetch(`${backendUrl}/api/v1/content`);
+    const token = getAuthToken(); // Get the token from localStorage (or Redux)
+    const response = await fetch(`${backendUrl}/api/v1/content`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
     if (!response.ok) {
       throw new Error("Failed to fetch contents");
     }
@@ -37,10 +45,12 @@ export const addContent = createAsyncThunk(
   "content/addContent",
   async (content: Omit<Content, "id">) => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const token = getAuthToken(); // Get the token from localStorage (or Redux)
     const response = await fetch(`${backendUrl}/api/v1/content`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : "",
       },
       body: JSON.stringify(content),
     });

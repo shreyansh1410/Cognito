@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { login } from "../store/authSlice";
+import { useAuth } from "../context/authContext";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { ToastContainer, toast } from "react-toastify";
 import {
   Card,
   CardContent,
@@ -24,50 +22,50 @@ import { Label } from "../components/ui/label";
 export function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const { login } = useAuth();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const formData = new FormData(e.target as HTMLFormElement);
-    const email = formData.get("email") as string;
+    const username = formData.get("email") as string;
     const password = formData.get("password") as string;
-    const name = isLogin ? null : (formData.get("name") as string);
-
-    const endpoint = isLogin
-      ? `${BACKEND_URL}/api/v1/user/signin`
-      : `${BACKEND_URL}/api/v1/user/signup`;
-
-    const requestBody = isLogin
-      ? { username: email, password }
-      : { username: email, password, name };
 
     try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to authenticate. Please try again.");
-      }
-
-      const data = await response.json();
-
       if (isLogin) {
-        dispatch(login({ email, token: data.token }));
+        // Fetch login API
+        const response = await fetch(`${BACKEND_URL}/api/v1/user/signin`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Login failed");
+        }
+
+        const data = await response.json();
+        const token = data.token; // Assuming the backend responds with a token
+        login(username, token);
         navigate("/");
       } else {
+        // Fetch signup API
+        const response = await fetch(`${BACKEND_URL}/api/v1/user/signup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Signup failed");
+        }
+
         console.log("Signup successful");
-        toast.success("Signup successful! You can now log in.");
         setIsLogin(true);
       }
     } catch (error) {
-      console.error("Error during authentication:", error);
+      console.error("Authentication error:", error);
+      // Show error to the user if needed
     }
   };
 
@@ -92,7 +90,7 @@ export function AuthPage() {
             </TabsList>
             <TabsContent value="login">
               <form onSubmit={handleSubmit}>
-                <div className="grid w-full gap-4">
+                <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" name="email" type="email" required />
@@ -114,7 +112,11 @@ export function AuthPage() {
             </TabsContent>
             <TabsContent value="signup">
               <form onSubmit={handleSubmit}>
-                <div className="grid w-full gap-4">
+                <div className="grid w-full items-center gap-4">
+                  <div className="flex flex-col space-y-1.5">
+                    <Label htmlFor="name">Name</Label>
+                    <Input id="name" name="name" required />
+                  </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" name="email" type="email" required />
@@ -149,7 +151,6 @@ export function AuthPage() {
           </p>
         </CardFooter>
       </Card>
-      <ToastContainer />
     </div>
   );
 }
