@@ -113,13 +113,13 @@ router.get(
       const content = await Content.find(
         { userId }, // Filter by the user's ID
         "_id type title tags userId link" // Only select necessary fields
-      );
+      ).populate("tags", "title"); // Populate tags and only include the 'title' field
       return res.status(200).json({
         content: content.map((single) => ({
           id: single._id,
           type: single.type,
           title: single.title,
-          tags: single.tags,
+          tags: single.tags.map((tag: any) => tag.title), // Extract tag titles
           link: single.link,
         })),
       });
