@@ -19,10 +19,26 @@ export function Home() {
   useEffect(() => {
     const loadContent = async () => {
       try {
-        const fetchedContent = await fetchContent() as Content[];
-        setContent(fetchedContent);
+        const response = await fetchContent();
+
+        console.log("Raw API response:", response);
+
+        if (
+          response &&
+          typeof response === "object" &&
+          Array.isArray(response.content)
+        ) {
+          setContent(response.content);
+        } else {
+          throw new Error("Unexpected API response structure.");
+        }
       } catch (err) {
-        setError("Failed to load content. Please try again later.");
+        console.error("Content loading error:", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load content. Please try again later."
+        );
       } finally {
         setIsLoading(false);
       }

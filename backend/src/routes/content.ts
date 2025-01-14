@@ -106,7 +106,14 @@ router.get(
   userMiddleware,
   async (req: Request, res: Response): Promise<any> => {
     try {
-      const content = await Content.find({}, "_id type title tags userId");
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ msg: "Unauthorized" });
+      }
+      const content = await Content.find(
+        { userId }, // Filter by the user's ID
+        "_id type title tags userId link" // Only select necessary fields
+      );
       return res.status(200).json({
         content: content.map((single) => ({
           id: single._id,
