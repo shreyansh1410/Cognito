@@ -17,7 +17,9 @@ interface Content {
 
 interface User {
   id: string;
-  username: string;
+  email: string;
+  firstName: string;
+  lastName?: string;
   password: string;
   sharedLink?: string;
   createdAt?: Date;
@@ -28,10 +30,10 @@ interface User {
 declare global {
   namespace Express {
     interface Request {
-      user?: { id: string; username: string }; // Make user optional and define its type
+      user?: { id: string; email: string }; // Make user optional and define its type
     }
     interface Response {
-      user?: { id: string; username: string }; // Make user optional and define its type
+      user?: { id: string; email: string }; // Make user optional and define its type
     }
   }
 }

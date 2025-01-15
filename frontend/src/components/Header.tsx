@@ -21,6 +21,8 @@ export function Header({ openAddContentModal }: HeaderProps) {
     navigate("/auth");
   };
 
+  console.log(`first Name is: ${user?.firstName}`);
+
   return (
     <header className="border-b bg-white">
       <div className="flex items-center justify-between px-6 py-4">
@@ -40,7 +42,7 @@ export function Header({ openAddContentModal }: HeaderProps) {
           </Button>
           <Button variant="ghost" className="gap-2" onClick={handleLogout}>
             <LogOut className="h-4 w-4" />
-            Logout {user?.email}
+            Logout {user?.firstName}
           </Button>
         </div>
       </div>

@@ -20,12 +20,17 @@ export function generateHash(): string {
 }
 
 const signupBody = zod.object({
-  username: zod.string().email(),
-  password: zod.string(),
+  email: zod.string().email().nonempty("Email is required"),
+  password: zod
+    .string()
+    .min(8)
+    .nonempty("Password of atleast 8 characters is required"),
+  firstName: zod.string().nonempty("First Name is required"),
+  lastName: zod.string(),
 });
 
 const signinBody = zod.object({
-  username: zod.string().email(),
+  email: zod.string().email(),
   password: zod.string(),
 });
 
@@ -36,15 +41,15 @@ router.get("/", (req: Request, res: Response) => {
 router.post("/signup", async (req: Request, res: Response): Promise<any> => {
   const { success } = signupBody.safeParse(req.body);
   if (!success) return res.status(411).json({ msg: "Invalid input" });
-  const { username, password } = req.body;
+  const { email, password, firstName, lastName } = req.body;
 
   try {
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ msg: "User already exists" });
     }
 
-    const user = new User({ username, password });
+    const user = new User({ email, password, firstName, lastName });
 
     await user.save();
 
@@ -72,13 +77,13 @@ router.post("/signup", async (req: Request, res: Response): Promise<any> => {
 });
 
 router.post("/signin", async (req: Request, res: Response): Promise<any> => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   const { success } = signinBody.safeParse(req.body);
   if (!success) return res.status(411).json({ msg: "Invalid input" });
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(411).json({ msg: "User not found" });
     }
@@ -87,11 +92,15 @@ router.post("/signin", async (req: Request, res: Response): Promise<any> => {
       return res.status(401).json({ msg: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: user._id, name: user.username }, JWT_SECRET, {
-      expiresIn: "12h",
-    });
+    const token = jwt.sign(
+      { id: user._id, name: user.email, firstName: user.firstName },
+      JWT_SECRET,
+      {
+        expiresIn: "12h",
+      }
+    );
 
-    return res.json({ token });
+    return res.json({ token, firstName: user.firstName });
   } catch (err: any) {
     return res.json({ msg: "Error signing in", error: err.message });
   }

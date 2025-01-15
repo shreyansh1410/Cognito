@@ -28,8 +28,10 @@ export function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
-    const username = formData.get("email") as string;
+    const email = formData.get("email") as string;
     const password = formData.get("password") as string;
+    const firstName = formData.get("firstName") as string;
+    const lastName = formData.get("lastName") as string;
 
     try {
       if (isLogin) {
@@ -37,7 +39,7 @@ export function AuthPage() {
         const response = await fetch(`${BACKEND_URL}/api/v1/user/signin`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password }),
+          body: JSON.stringify({ email, password }),
         });
 
         if (!response.ok) {
@@ -47,14 +49,15 @@ export function AuthPage() {
         const data = await response.json();
         const token = data.token; // Assuming the backend responds with a token
         localStorage.setItem("token", token);
-        login(username, token);
+        localStorage.setItem("firstName", data.firstName); // Store firstName from response
+        login(email, token, data.firstName); // Pass firstName from response
         navigate("/");
       } else {
         // Fetch signup API
         const response = await fetch(`${BACKEND_URL}/api/v1/user/signup`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password }),
+          body: JSON.stringify({ email, password, firstName, lastName }),
         });
 
         if (!response.ok) {
@@ -74,7 +77,7 @@ export function AuthPage() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Card className="w-[350px]">
         <CardHeader>
-          <CardTitle>Welcome to Second Brain</CardTitle>
+          <CardTitle>Welcome to Cognito</CardTitle>
           <CardDescription>
             {isLogin ? "Login to your account" : "Create a new account"}
           </CardDescription>
@@ -94,7 +97,13 @@ export function AuthPage() {
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" name="email" type="email" required />
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="johndoe@email.com"
+                      required
+                    />
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="password">Password</Label>
@@ -102,6 +111,7 @@ export function AuthPage() {
                       id="password"
                       name="password"
                       type="password"
+                      placeholder="********"
                       required
                     />
                   </div>
@@ -115,12 +125,27 @@ export function AuthPage() {
               <form onSubmit={handleSubmit}>
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" name="name" required />
+                    <Label htmlFor="name">First Name</Label>
+                    <Input
+                      id="firstname"
+                      name="firstName"
+                      required
+                      placeholder="John"
+                    />
+                  </div>
+                  <div className="flex flex-col space-y-1.5">
+                    <Label htmlFor="name">Last Name</Label>
+                    <Input id="lastname" name="lastName" placeholder="Doe" />
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" name="email" type="email" required />
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="johndoe@email.com"
+                      required
+                    />
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="password">Password</Label>
@@ -128,6 +153,7 @@ export function AuthPage() {
                       id="password"
                       name="password"
                       type="password"
+                      placeholder="********"
                       required
                     />
                   </div>

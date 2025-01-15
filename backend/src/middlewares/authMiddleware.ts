@@ -25,7 +25,7 @@ export const userMiddleware = (
           .json({ msg: "Access denied, no token provided" });
       const decoded = jwt.verify(token, JWT_SECRET!);
       // console.log(decoded);
-      req.user = decoded as { id: string; username: string }; // Attach the user info to the request object
+      req.user = decoded as { id: string; email: string }; // Attach the user info to the request object
       next(); // Proceed to the next middleware or route handler
       resolve();
     } catch (err) {
