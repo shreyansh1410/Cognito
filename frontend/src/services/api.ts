@@ -35,4 +35,20 @@ export const deleteContent = async (id: string) => {
   return response.data;
 };
 
+export const editContent = async (
+  contentId: string,
+  data: {
+    title: string;
+    type: "image" | "video" | "article" | "audio";
+    link: string;
+    tags: string[];
+  }
+) => {
+  const response = await api.put("/content/edit", {
+    contentId,
+    ...data,
+  });
+  return response.data;
+};
+
 export default api;

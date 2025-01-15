@@ -129,7 +129,71 @@ router.get(
   }
 );
 
+router.put(
+  "/edit",
+  userMiddleware,
+  async (req: Request, res: Response): Promise<any> => {
+    const { contentId, title, type, link, tags } = req.body;
 
+    // Validate input
+    if (!contentId || !title || !type || !link) {
+      return res.status(400).json({ msg: "All fields are required" });
+    }
+
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ msg: "Unauthorized" });
+      }
+
+      // Check if the content exists and belongs to the current user
+      const content = await Content.findOne({ _id: contentId, userId });
+      if (!content) {
+        return res.status(404).json({ msg: "Content not found" });
+      }
+
+      // Update content fields
+      content.title = title;
+      content.type = type;
+      content.link = link;
+
+      // Update tags
+      const tagIds = await Promise.all(
+        (tags || []).map(async (tagName: string) => {
+          const tag = await Tag.findOneAndUpdate(
+            { title: tagName },
+            { title: tagName },
+            { upsert: true, new: true }
+          );
+          return tag._id;
+        })
+      );
+      content.tags =
+        tagIds as mongoose.Types.DocumentArray<mongoose.Types.ObjectId>;
+
+      // Save the updated content
+      await content.save();
+
+      return res.status(200).json({
+        msg: "Content updated successfully",
+        content: {
+          id: content._id,
+          type: content.type,
+          title: content.title,
+          link: content.link,
+          tags: content.tags || [],
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        msg: "Error updating content",
+        error:
+          err instanceof Error ? err.message : "An unexpected error occurred",
+      });
+    }
+  }
+);
 
 router.delete(
   "/",

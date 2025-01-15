@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NoteCard } from "../components/NoteCard";
-import { fetchContent, deleteContent } from "../services/api";
+import { fetchContent, deleteContent, editContent } from "../services/api";
 
 interface Content {
   id: string;
@@ -62,6 +62,32 @@ export function Home() {
       alert("Failed to delete content. Please try again.");
     }
   };
+  const handleEdit = async (
+    id: string,
+    newData: {
+      title: string;
+      type: "image" | "video" | "article" | "audio";
+      link: string;
+      tags: string[];
+    }
+  ) => {
+    try {
+      await editContent(id, newData);
+      setContent((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                ...newData,
+              }
+            : item
+        )
+      );
+    } catch (err) {
+      console.error("Error editing content:", err);
+      alert("Failed to edit content. Please try again.");
+    }
+  };
 
   if (isLoading) {
     return <div className="text-center mt-8">Loading...</div>;
@@ -81,8 +107,10 @@ export function Home() {
           type={item.type}
           tags={item.tags}
           date={item.date}
+          link={item.link}
           content={`Link: ${item.link}`}
-          onDelete={()=>handleDelete(item.id)}
+          onDelete={() => handleDelete(item.id)}
+          onEdit={(newData) => handleEdit(item.id, newData)}
         />
       ))}
     </div>

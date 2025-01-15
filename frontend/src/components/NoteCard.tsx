@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { EditContentDialog } from "./EditContentDialog";
 import { Button } from "./ui/button";
 import {
   Share2,
@@ -7,7 +8,7 @@ import {
   Twitter,
   Youtube,
   Image,
-  FileAudio
+  FileAudio,
 } from "lucide-react";
 
 interface NoteCardProps {
@@ -17,7 +18,14 @@ interface NoteCardProps {
   type: "document" | "tweet" | "video" | "image" | "article" | "audio";
   tags: string[];
   date: string;
+  link: string;
   onDelete: () => void;
+  onEdit: (data: {
+    title: string;
+    type: "image" | "video" | "article" | "audio";
+    link: string;
+    tags: string[];
+  }) => void;
 }
 
 export function NoteCard({
@@ -25,9 +33,11 @@ export function NoteCard({
   title,
   content,
   type,
+  link,
   tags,
   date,
   onDelete,
+  onEdit,
 }: NoteCardProps) {
   const Icon = {
     document: FileText,
@@ -53,6 +63,16 @@ export function NoteCard({
           </div>
         </CardTitle>
         <div className="flex gap-1">
+          <EditContentDialog
+            id={id}
+            initialData={{
+              title,
+              type,
+              link,
+              tags,
+            }}
+            onEdit={onEdit}
+          />
           <Button
             variant="ghost"
             size="icon"
