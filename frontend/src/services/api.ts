@@ -51,4 +51,14 @@ export const editContent = async (
   return response.data;
 };
 
+export const fetchShareLink = async () => {
+  try {
+    const response = await api.post("/brain/share", { isShare: true });
+    return response.data.shareLink;
+  } catch (error) {
+    console.error("Error fetching share link:", error);
+    throw error;
+  }
+};
+
 export default api;
