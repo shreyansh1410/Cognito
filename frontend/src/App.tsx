@@ -10,6 +10,7 @@ import { Layout } from "./components/Layout";
 import { Home } from "./pages/Home";
 import { AuthPage } from "./pages/AuthPage";
 import "./App.css";
+import { Toaster } from "./components/ui/toaster";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -23,6 +24,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
 function App() {
   return (
     <AuthProvider>
+      <Toaster />
       <Router>
         <Routes>
           <Route path="/auth" element={<AuthPage />} />

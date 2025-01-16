@@ -12,11 +12,23 @@ mongoose
   .catch((err) => console.log("MongoDB connection error:", err));
 
 //user schema
-const UserSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  firstName: { type: String, required: true },
-  lastName: { type: String },
+const UserSchema = new mongoose.Schema(
+  {
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String },
+  },
+  {
+    // This will make Mongoose rebuild indexes on model compilation
+    autoIndex: true,
+  }
+);
+
+UserSchema.on("index", function (error) {
+  if (error) {
+    console.error("User Schema Index Error:", error);
+  }
 });
 
 //tag schema
@@ -40,6 +52,7 @@ ContentSchema.index({ link: 1, userId: 1 }, { unique: true });
 const LinkSchema = new mongoose.Schema({
   hash: { type: String, requires: true },
   userId: { type: Types.ObjectId, ref: "User", required: true },
+  isPublic: Boolean,
 });
 
 const User = mongoose.model("User", UserSchema);

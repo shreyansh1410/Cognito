@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import { toast } from "@/hooks/use-toast"; // Correct import path
 import {
   Card,
   CardContent,
@@ -21,12 +22,15 @@ import { Label } from "../components/ui/label";
 
 export function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+
     const formData = new FormData(e.target as HTMLFormElement);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
@@ -35,41 +39,62 @@ export function AuthPage() {
 
     try {
       if (isLogin) {
-        // Fetch login API
         const response = await fetch(`${BACKEND_URL}/api/v1/user/signin`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-          throw new Error("Login failed");
+          throw new Error(data.msg || "Login failed");
         }
 
-        const data = await response.json();
-        const token = data.token; // Assuming the backend responds with a token
-        localStorage.setItem("token", token);
-        localStorage.setItem("firstName", data.firstName); // Store firstName from response
-        login(email, token, data.firstName); // Pass firstName from response
-        navigate("/");
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("firstName", data.firstName);
+          login(email, data.token, data.firstName);
+          toast({
+            description: "Successfully logged in!",
+          });
+          navigate("/");
+        } else {
+          throw new Error("No token received");
+        }
       } else {
-        // Fetch signup API
+        // Signup flow with detailed error logging
+        console.log("Attempting signup with:", { email, firstName, lastName }); // Log signup attempt
+
         const response = await fetch(`${BACKEND_URL}/api/v1/user/signup`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password, firstName, lastName }),
         });
 
+        // Log the raw response for debugging
+        console.log("Signup response status:", response.status);
+        const data = await response.json();
+        console.log("Signup response data:", data);
+
         if (!response.ok) {
-          throw new Error("Signup failed");
+          throw new Error(data.msg || data.error || "Signup failed");
         }
 
-        console.log("Signup successful");
+        toast({
+          description:
+            data.msg || "Account created successfully! Please login.",
+        });
         setIsLogin(true);
       }
-    } catch (error) {
-      console.error("Authentication error:", error);
-      // Show error to the user if needed
+    } catch (error: any) {
+      console.error("Auth error details:", error);
+      toast({
+        variant: "destructive",
+        description: error.message || "Something went wrong",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -85,10 +110,18 @@ export function AuthPage() {
         <CardContent>
           <Tabs value={isLogin ? "login" : "signup"} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login" onClick={() => setIsLogin(true)}>
+              <TabsTrigger
+                value="login"
+                onClick={() => setIsLogin(true)}
+                disabled={isLoading}
+              >
                 Login
               </TabsTrigger>
-              <TabsTrigger value="signup" onClick={() => setIsLogin(false)}>
+              <TabsTrigger
+                value="signup"
+                onClick={() => setIsLogin(false)}
+                disabled={isLoading}
+              >
                 Sign Up
               </TabsTrigger>
             </TabsList>
@@ -103,6 +136,7 @@ export function AuthPage() {
                       type="email"
                       placeholder="johndoe@email.com"
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <div className="flex flex-col space-y-1.5">
@@ -113,11 +147,17 @@ export function AuthPage() {
                       type="password"
                       placeholder="********"
                       required
+                      disabled={isLoading}
+                      minLength={8}
                     />
                   </div>
                 </div>
-                <Button className="w-full mt-6" type="submit">
-                  Login
+                <Button
+                  className="w-full mt-6"
+                  type="submit"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Please wait..." : "Login"}
                 </Button>
               </form>
             </TabsContent>
@@ -125,17 +165,23 @@ export function AuthPage() {
               <form onSubmit={handleSubmit}>
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
-                    <Label htmlFor="name">First Name</Label>
+                    <Label htmlFor="firstName">First Name</Label>
                     <Input
-                      id="firstname"
+                      id="firstName"
                       name="firstName"
                       required
                       placeholder="John"
+                      disabled={isLoading}
                     />
                   </div>
                   <div className="flex flex-col space-y-1.5">
-                    <Label htmlFor="name">Last Name</Label>
-                    <Input id="lastname" name="lastName" placeholder="Doe" />
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      name="lastName"
+                      placeholder="Doe"
+                      disabled={isLoading}
+                    />
                   </div>
                   <div className="flex flex-col space-y-1.5">
                     <Label htmlFor="email">Email</Label>
@@ -145,6 +191,7 @@ export function AuthPage() {
                       type="email"
                       placeholder="johndoe@email.com"
                       required
+                      disabled={isLoading}
                     />
                   </div>
                   <div className="flex flex-col space-y-1.5">
@@ -155,11 +202,17 @@ export function AuthPage() {
                       type="password"
                       placeholder="********"
                       required
+                      disabled={isLoading}
+                      minLength={8}
                     />
                   </div>
                 </div>
-                <Button className="w-full mt-6" type="submit">
-                  Sign Up
+                <Button
+                  className="w-full mt-6"
+                  type="submit"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Please wait..." : "Sign Up"}
                 </Button>
               </form>
             </TabsContent>
@@ -172,6 +225,7 @@ export function AuthPage() {
               variant="link"
               className="pl-1"
               onClick={() => setIsLogin(!isLogin)}
+              disabled={isLoading}
             >
               {isLogin ? "Sign Up" : "Login"}
             </Button>
