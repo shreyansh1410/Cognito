@@ -14,10 +14,28 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export const createContent = async (data: {
+  type: string;
+  title: string;
+  link: string;
+  tags: string[];
+}) => {
+  try {
+    const response = await api.post("/content/create", data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating content:", error);
+    throw error;
+  }
+};
+
 export const fetchContent = async () => {
   try {
     const response = await api.get("/content");
-    console.log("API Response:", response.data);
+    // Log the raw response for debugging
+    console.log("Raw API Response:", response);
+
+    // Return the data directly, letting the component handle the structure
     return response.data;
   } catch (error) {
     console.error("Error fetching content:", error);
@@ -26,29 +44,36 @@ export const fetchContent = async () => {
 };
 
 export const deleteContent = async (id: string) => {
-  const response = await axios.delete(`/api/content`, {
-    data: { contentId: id },
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-  return response.data;
+  try {
+    const response = await api.delete(`/content`, {
+      data: { contentId: id },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting content:", error);
+    throw error;
+  }
 };
 
 export const editContent = async (
   contentId: string,
   data: {
     title: string;
-    type: "image" | "video" | "article" | "audio";
+    type: "document" | "tweet" | "video" | "image" | "article" | "audio";
     link: string;
     tags: string[];
   }
 ) => {
-  const response = await api.put("/content/edit", {
-    contentId,
-    ...data,
-  });
-  return response.data;
+  try {
+    const response = await api.put("/content/edit", {
+      contentId,
+      ...data,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error editing content:", error);
+    throw error;
+  }
 };
 
 export const fetchShareLink = async () => {

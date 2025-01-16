@@ -47,7 +47,6 @@ interface EditContentDialogProps {
 }
 
 export function EditContentDialog({
-  id,
   initialData,
   onEdit,
 }: EditContentDialogProps) {

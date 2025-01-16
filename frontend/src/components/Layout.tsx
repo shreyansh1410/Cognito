@@ -7,6 +7,7 @@ import { AddContentModal } from "./AddContentModal";
 export function Layout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isAddContentModalOpen, setIsAddContentModalOpen] = useState(false);
+  const [refresh, setRefresh] = useState(0);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -21,11 +22,17 @@ export function Layout() {
       >
         <Header openAddContentModal={() => setIsAddContentModalOpen(true)} />
         <div className="p-6">
-          <Outlet />
+          <Outlet context={{ setRefresh }} />
         </div>
       </main>
       {isAddContentModalOpen && (
-        <AddContentModal onClose={() => setIsAddContentModalOpen(false)} />
+        <AddContentModal
+          onClose={() => setIsAddContentModalOpen(false)}
+          onContentAdded={() => {
+            setRefresh((prev) => prev + 1); // Update refresh counter
+            setIsAddContentModalOpen(false); // Close modal after successful add
+          }}
+        />
       )}
     </div>
   );

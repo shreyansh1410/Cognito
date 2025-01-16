@@ -1,37 +1,50 @@
 import { useEffect, useState } from "react";
 import { NoteCard } from "../components/NoteCard";
 import { fetchContent, deleteContent, editContent } from "../services/api";
+import { useOutletContext } from "react-router-dom";
 
 interface Content {
   id: string;
   title: string;
-  type: "image" | "video" | "article" | "audio";
+  type: "document" | "tweet" | "video" | "image" | "article" | "audio";
   tags: string[];
   date: string;
   link: string;
+  content?: string;
 }
+type ContextType = {
+  setRefresh: (prev: number) => void;
+  refresh: number;
+};
 
 export function Home() {
   const [content, setContent] = useState<Content[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { refresh, setRefresh } = useOutletContext<ContextType>();
 
   useEffect(() => {
     const loadContent = async () => {
       try {
         const response = await fetchContent();
-
         console.log("Raw API response:", response);
 
-        if (
-          response &&
-          typeof response === "object" &&
-          Array.isArray(response.content)
-        ) {
-          setContent(response.content);
-        } else {
-          throw new Error("Unexpected API response structure.");
-        }
+        // Handle different response structures
+        const contentData = Array.isArray(response)
+          ? response
+          : response.content || response.data || [];
+
+        setContent(
+          contentData.map((item: any) => ({
+            id: item.id || item._id,
+            title: item.title,
+            type: item.type,
+            tags: item.tags || [],
+            date: item.date || new Date(item.createdAt).toLocaleDateString(),
+            link: item.link || item.url,
+            content: item.content || item.description,
+          }))
+        );
       } catch (err) {
         console.error("Content loading error:", err);
         setError(
@@ -45,7 +58,7 @@ export function Home() {
     };
 
     loadContent();
-  }, []);
+  }, [refresh]);
 
   const handleDelete = async (id: string) => {
     const userConfirmed = window.confirm(
@@ -55,18 +68,19 @@ export function Home() {
     if (!userConfirmed) return;
 
     try {
-      await deleteContent(id); // API call to delete content
-      setContent((prev) => prev.filter((item) => item.id !== id)); // Update UI
+      await deleteContent(id);
+      setContent((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
       console.error("Error deleting content:", err);
       alert("Failed to delete content. Please try again.");
     }
   };
+
   const handleEdit = async (
     id: string,
     newData: {
       title: string;
-      type: "image" | "video" | "article" | "audio";
+      type: "document" | "tweet" | "video" | "image" | "article" | "audio";
       link: string;
       tags: string[];
     }
@@ -98,21 +112,23 @@ export function Home() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {content.map((item) => (
-        <NoteCard
-          key={item.id}
-          id={item.id}
-          title={item.title}
-          type={item.type}
-          tags={item.tags}
-          date={item.date}
-          link={item.link}
-          content={`Link: ${item.link}`}
-          onDelete={() => handleDelete(item.id)}
-          onEdit={(newData) => handleEdit(item.id, newData)}
-        />
-      ))}
+    <div className="p-6">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {content.map((item) => (
+          <NoteCard
+            key={item.id}
+            id={item.id}
+            title={item.title}
+            type={item.type}
+            tags={item.tags}
+            date={item.date}
+            link={item.link}
+            content={item.content}
+            onDelete={() => handleDelete(item.id)}
+            onEdit={(newData) => handleEdit(item.id, newData)}
+          />
+        ))}
+      </div>
     </div>
   );
 }

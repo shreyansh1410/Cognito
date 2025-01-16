@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import {
   Dialog,
   DialogContent,
@@ -16,8 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { createContent } from "../services/api";
 
-const contentTypes = ["image", "video", "article", "audio"];
+const contentTypes = ["image", "video", "article", "audio", "tweet"];
 
 const initialTags = [
   "productivity",
@@ -30,21 +32,65 @@ const initialTags = [
 
 interface AddContentModalProps {
   onClose: () => void;
+  onContentAdded: () => void;
 }
 
-export function AddContentModal({ onClose }: AddContentModalProps) {
+export function AddContentModal({
+  onClose,
+  onContentAdded,
+}: AddContentModalProps) {
   const [type, setType] = useState<string>("");
   const [title, setTitle] = useState("");
   const [link, setLink] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [availableTags, setAvailableTags] = useState(initialTags);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Implement add content functionality
-    console.log("New content:", { type, title, link, tags });
-    onClose();
+    setError("");
+
+    if (!type || !title || !link) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await createContent({
+        type,
+        title,
+        link,
+        tags,
+      });
+
+      if (onContentAdded) {
+        onContentAdded();
+      }
+
+      // Reset form
+      setType("");
+      setTitle("");
+      setLink("");
+      setTags([]);
+      onClose();
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.data) {
+        setError(
+          err.response.data.error ||
+            err.response.data.msg ||
+            "Failed to add content"
+        );
+      } else {
+        setError("Failed to add content. Please try again.");
+      }
+      console.error("Error creating content:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleAddTag = () => {
@@ -68,6 +114,7 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
           <DialogTitle>Add New Content</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
+          {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="type" className="text-right">
@@ -95,6 +142,7 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="col-span-3"
+                required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -106,6 +154,7 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
                 className="col-span-3"
+                required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -160,7 +209,9 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">Add Content</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Adding..." : "Add Content"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

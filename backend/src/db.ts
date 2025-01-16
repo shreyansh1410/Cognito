@@ -37,7 +37,7 @@ const TagSchema = new mongoose.Schema({
 });
 
 //content schema
-const contentTypes = ["image", "video", "article", "audio"]; // Extend as needed
+const contentTypes = ["image", "video", "article", "audio", "tweet"]; // Extend as needed
 const ContentSchema = new mongoose.Schema({
   link: { type: String, required: true },
   type: { type: String, enum: contentTypes, required: true },

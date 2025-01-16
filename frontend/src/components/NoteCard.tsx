@@ -10,6 +10,7 @@ import {
   Image,
   FileAudio,
 } from "lucide-react";
+import { useEffect } from "react";
 
 interface NoteCardProps {
   id: string;
@@ -22,7 +23,7 @@ interface NoteCardProps {
   onDelete: () => void;
   onEdit: (data: {
     title: string;
-    type: "image" | "video" | "article" | "audio";
+    type: "document" | "tweet" | "video" | "image" | "article" | "audio";
     link: string;
     tags: string[];
   }) => void;
@@ -39,6 +40,33 @@ export function NoteCard({
   onDelete,
   onEdit,
 }: NoteCardProps) {
+  // Load Twitter widget script when needed
+  useEffect(() => {
+    if (type === "tweet") {
+      // Remove existing script if any
+      const existingScript = document.getElementById("twitter-widget");
+      if (existingScript) {
+        existingScript.remove();
+      }
+
+      // Create and append new Twitter script
+      const script = document.createElement("script");
+      script.id = "twitter-widget";
+      script.src = "https://platform.twitter.com/widgets.js";
+      script.async = true;
+      script.charset = "utf-8";
+      document.body.appendChild(script);
+
+      return () => {
+        // Cleanup script on component unmount
+        const script = document.getElementById("twitter-widget");
+        if (script) {
+          script.remove();
+        }
+      };
+    }
+  }, [type]);
+
   const Icon = {
     document: FileText,
     tweet: Twitter,
@@ -51,6 +79,79 @@ export function NoteCard({
   const handleShare = () => {
     // Implement share functionality
     console.log("Share note:", id);
+  };
+
+  const getYouTubeVideoId = (url: string) => {
+    const urlParams = new URL(url).searchParams;
+    return urlParams.get("v") || url.split("/").pop();
+  };
+
+  const formatTweetUrl = (url: string) => {
+    // Convert x.com URLs to twitter.com
+    return url.replace("x.com", "twitter.com");
+  };
+
+  const renderContent = () => {
+    switch (type) {
+      case "tweet":
+        // Extract tweet ID from URL
+        link = formatTweetUrl(link);
+        const tweetId = link.split("/").pop();
+        return (
+          <div className="mt-4 min-h-[200px]">
+            <div id={`tweet-${tweetId}`}>
+              <blockquote className="twitter-tweet">
+                <a href={link}></a>
+              </blockquote>
+            </div>
+          </div>
+        );
+
+      case "video":
+        const videoId = getYouTubeVideoId(link);
+        return (
+          <div className="mt-4">
+            <div className="relative pb-[56.25%] h-0">
+              <iframe
+                src={`https://www.youtube.com/embed/${videoId}`}
+                className="absolute top-0 left-0 w-full h-full rounded-lg"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+          </div>
+        );
+
+      case "image":
+        return (
+          <div className="mt-4">
+            <img
+              src={link}
+              alt={title}
+              className="w-full h-auto rounded-lg object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/placeholder.svg";
+              }}
+            />
+          </div>
+        );
+
+      default:
+        return (
+          <div className="mt-4">
+            <a
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline break-words"
+            >
+              {link}
+            </a>
+            {content && <p className="text-sm text-gray-500 mt-2">{content}</p>}
+          </div>
+        );
+    }
   };
 
   return (
@@ -92,7 +193,7 @@ export function NoteCard({
         </div>
       </CardHeader>
       <CardContent>
-        {content && <p className="text-sm text-gray-500 mt-2">{content}</p>}
+        {renderContent()}
         <div className="flex flex-wrap gap-2 mt-4">
           {tags.map((tag) => (
             <span

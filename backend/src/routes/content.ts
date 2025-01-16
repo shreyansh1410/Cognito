@@ -11,10 +11,10 @@ dotenv.config();
 const router = express.Router();
 
 const createContentBody = zod.object({
-  type: zod.enum(["image", "video", "article", "audio"], {
+  type: zod.enum(["image", "video", "article", "audio", "tweet"], {
     errorMap: () => ({
       message:
-        "Invalid content type. Allowed types are: image, video, article, audio",
+        "Invalid content type. Allowed types are: image, video, article, audio, tweet",
     }),
   }),
   link: zod.string().url(),
