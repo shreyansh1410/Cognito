@@ -14,6 +14,35 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export const uploadFile = async (
+  file: File,
+  onUploadProgress?: (progress: number) => void
+) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.post("/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onUploadProgress && progressEvent.total) {
+          const progress = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          onUploadProgress(progress);
+        }
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error uploading file:", error);
+    throw error;
+  }
+};
+
 export const createContent = async (data: {
   type: string;
   title: string;

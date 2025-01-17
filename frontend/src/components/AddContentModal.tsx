@@ -1,5 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
+import {
+  validateContentType,
+  getErrorMessage,
+} from "../utils/ContentValidation";
 import {
   Dialog,
   DialogContent,
@@ -14,10 +18,10 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
+  SelectTrigger,  
   SelectValue,
 } from "./ui/select";
-import { createContent } from "../services/api";
+import { createContent, uploadFile } from "../services/api";
 
 const contentTypes = ["image", "video", "article", "audio", "tweet"];
 
@@ -47,23 +51,78 @@ export function AddContentModal({
   const [availableTags, setAvailableTags] = useState(initialTags);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleTypeChange = (newType: string) => {
+    setType(newType);
+    setLink("");
+    setFile(null);
+    setError(""); // Clear any existing errors
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+
+    // Validate file type
+    const fileType = selectedFile.type.split("/")[0];
+    if (
+      (type === "image" && !fileType.startsWith("image")) ||
+      (type === "video" && !fileType.startsWith("video")) ||
+      (type === "audio" && !fileType.startsWith("audio"))
+    ) {
+      setError(`Invalid file type for ${type} content`);
+      return;
+    }
+
+    setFile(selectedFile);
+    setLink(""); // Clear link when file is selected
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!type || !title || !link) {
+    if (!type || !title) {
       setError("Please fill in all required fields");
+      return;
+    }
+
+    // Validate content type if a link is provided
+    if (link && !validateContentType(type, link)) {
+      setError(getErrorMessage(type));
+      return;
+    }
+
+    // Validate that either a link or file is provided
+    if (!link && !file) {
+      setError("Please provide either a link or upload a file");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
+      let uploadedUrl = link;
+
+      // If there's a file, upload it first
+      if (file) {
+        const uploadResponse = await uploadFile(file, (progress) => {
+          setUploadProgress(progress);
+        });
+        uploadedUrl = uploadResponse.url;
+      }
+
+      // Create content with the link or uploaded file URL
       await createContent({
         type,
         title,
-        link,
+        link: uploadedUrl,
         tags,
       });
 
@@ -76,6 +135,10 @@ export function AddContentModal({
       setTitle("");
       setLink("");
       setTags([]);
+      setFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       onClose();
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.data) {
@@ -120,7 +183,7 @@ export function AddContentModal({
               <Label htmlFor="type" className="text-right">
                 Type
               </Label>
-              <Select value={type} onValueChange={setType}>
+              <Select value={type} onValueChange={handleTypeChange}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select content type" />
                 </SelectTrigger>
@@ -145,17 +208,48 @@ export function AddContentModal({
                 required
               />
             </div>
+            {/* Content Input (File or URL) */}
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="link" className="text-right">
-                Link
-              </Label>
-              <Input
-                id="link"
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
-                className="col-span-3"
-                required
-              />
+              <Label className="text-right">Content</Label>
+              <div className="col-span-3 space-y-2">
+                {(type === "image" || type === "video" || type === "audio") && (
+                  <div className="space-y-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept={
+                        type === "image"
+                          ? "image/*"
+                          : type === "video"
+                          ? "video/*"
+                          : "audio/*"
+                      }
+                      onChange={handleFileChange}
+                      className="w-full"
+                    />
+                    {uploadProgress > 0 && uploadProgress < 100 && (
+                      <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                        <div
+                          className="bg-blue-600 h-2.5 rounded-full"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    )}
+                    <div className="text-sm text-gray-500 text-center">or</div>
+                  </div>
+                )}
+                <Input
+                  value={link}
+                  onChange={(e) => setLink(e.target.value)}
+                  placeholder={
+                    type
+                      ? `Enter ${type} URL`
+                      : "Please select a content type first"
+                  }
+                  disabled={!type}
+                  className="w-full"
+                />
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="tags" className="text-right">

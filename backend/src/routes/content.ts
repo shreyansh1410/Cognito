@@ -1,3 +1,4 @@
+// content.ts
 import express from "express";
 import { Request, Response } from "../../index";
 import dotenv from "dotenv";
@@ -5,11 +6,22 @@ import zod from "zod";
 import { User, Content, Tag, Link } from "../db";
 import { userMiddleware } from "../middlewares/authMiddleware";
 import mongoose from "mongoose";
+import multer from "multer";
+import { storage } from "../config/cloudinary";
 
 dotenv.config();
 
 const router = express.Router();
 
+// Configure multer with Cloudinary storage
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+});
+
+// Modified schema to make link optional
 const createContentBody = zod.object({
   type: zod.enum(["image", "video", "article", "audio", "tweet"], {
     errorMap: () => ({
@@ -17,31 +29,55 @@ const createContentBody = zod.object({
         "Invalid content type. Allowed types are: image, video, article, audio, tweet",
     }),
   }),
-  link: zod.string().url(),
+  link: zod.string().url().optional(), // Make link optional
   title: zod.string().nonempty(),
   tags: zod.array(zod.string().optional()),
 });
 
+// New combined route that handles both direct links and file uploads
 router.post(
   "/create",
   userMiddleware,
+  upload.single("file"), // Add multer middleware
   async (req: Request, res: Response): Promise<any> => {
-    const parseResult = createContentBody.safeParse(req.body);
-    if (!parseResult.success) {
-      // Get the first error message
-      const errorMessage =
-        parseResult.error.errors[0]?.message || "Invalid input";
-      return res.status(400).json({
-        msg: "Validation failed",
-        error: errorMessage,
-      });
-    }
-    const { type, link, title, tags } = parseResult.data;
-
     try {
+      let link: string;
+
+      // If a file was uploaded, use its URL
+      if (req.file) {
+        link = req.file.path;
+      } else if (req.body.link) {
+        // If no file but a link was provided, use that
+        link = req.body.link;
+      } else {
+        return res.status(400).json({
+          msg: "Validation failed",
+          error: "Either a file or a link must be provided",
+        });
+      }
+
+      // Prepare the data for validation
+      const contentData = {
+        type: req.body.type,
+        link: link,
+        title: req.body.title,
+        tags: req.body.tags
+      };
+
+      const parseResult = createContentBody.safeParse(contentData);
+      if (!parseResult.success) {
+        const errorMessage =
+          parseResult.error.errors[0]?.message || "Invalid input";
+        return res.status(400).json({
+          msg: "Validation failed",
+          error: errorMessage,
+        });
+      }
+
       if (!req.user) {
         return res.status(401).json({ msg: "Unauthorized" });
       }
+
       // Check if the link already exists
       let existingLink = await Link.findOne({ link });
       if (!existingLink) {
@@ -53,23 +89,22 @@ router.post(
       }
 
       const tagIds = await Promise.all(
-        (tags || []).map(async (tagName) => {
-          // Use findOneAndUpdate with upsert to either find or create the tag
+        (contentData.tags || []).map(async (tagName: any) => {
           const tag = await Tag.findOneAndUpdate(
             { title: tagName },
             { title: tagName },
-            { upsert: true, new: true } //The upsert = true option creates the object if it doesn't exist. defaults to false.
+            { upsert: true, new: true }
           );
           return tag._id;
         })
       );
 
       const content = new Content({
-        type,
+        type: contentData.type,
         link,
-        title,
+        title: contentData.title,
         tags: tagIds,
-        userId: req.user.id, // Associate content with the authenticated user
+        userId: req.user.id,
       });
 
       await content.save();
@@ -85,18 +120,12 @@ router.post(
         },
       });
     } catch (err) {
-      if (err instanceof Error) {
-        console.error(err.message);
-        return res
-          .status(500)
-          .json({ msg: "Error creating content", error: err.message });
-      } else {
-        console.error(err);
-        return res.status(500).json({
-          msg: "Error creating content",
-          error: "An unexpected error occurred",
-        });
-      }
+      console.error(err);
+      return res.status(500).json({
+        msg: "Error creating content",
+        error:
+          err instanceof Error ? err.message : "An unexpected error occurred",
+      });
     }
   }
 );

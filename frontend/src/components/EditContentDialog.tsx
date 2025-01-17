@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,6 +6,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import axios from "axios";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -57,8 +58,11 @@ export function EditContentDialog({
     type: initialData.type as EditableContentType,
   });
   const [tagsInput, setTagsInput] = useState(initialData.tags.join(", "));
+  const [file, setFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const processedTags = tagsInput
       .split(",")
@@ -67,12 +71,49 @@ export function EditContentDialog({
 
     // Only allow submission if type is a valid EditableContentType
     if (isEditableContentType(formData.type)) {
-      onEdit({
-        ...formData,
-        type: formData.type,
-        tags: processedTags,
-      });
-      setIsOpen(false);
+      try {
+        if (file) {
+          // If there's a file, use FormData
+          const formData: any = new FormData();
+          formData.append("file", file);
+          formData.append("type", formData.type);
+          formData.append("title", formData.title);
+          formData.append("tags", JSON.stringify(processedTags));
+
+          const response = await axios.put("/api/content/edit", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            onUploadProgress: (progressEvent) => {
+              const progress = progressEvent.total
+                ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                : 0;
+              setUploadProgress(progress);
+            },
+          });
+
+          onEdit(response.data.content);
+        } else {
+          // If using existing link or new link URL
+          onEdit({
+            ...formData,
+            type: formData.type,
+            tags: processedTags,
+          });
+        }
+        setIsOpen(false);
+      } catch (error) {
+        console.error("Error updating content:", error);
+      }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      // Clear the link when a file is selected
+      setFormData({ ...formData, link: "" });
     }
   };
 
@@ -132,13 +173,42 @@ export function EditContentDialog({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="link">Link</Label>
+            <Label>Content</Label>
+            {(formData.type === "image" ||
+              formData.type === "video" ||
+              formData.type === "audio") && (
+              <div className="space-y-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept={
+                    formData.type === "image"
+                      ? "image/*"
+                      : formData.type === "video"
+                      ? "video/*"
+                      : "audio/*"
+                  }
+                  onChange={handleFileChange}
+                  className="w-full"
+                />
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div
+                      className="bg-blue-600 h-2.5 rounded-full"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                )}
+                <div className="text-sm text-gray-500 text-center">or</div>
+              </div>
+            )}
             <Input
-              id="link"
               value={formData.link}
               onChange={(e) =>
                 setFormData({ ...formData, link: e.target.value })
               }
+              placeholder={`Enter ${formData.type} URL`}
+              disabled={!!file}
             />
           </div>
           <div className="space-y-2">
