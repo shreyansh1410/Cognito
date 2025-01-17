@@ -69,7 +69,16 @@ router.post("/signup", async (req: Request, res: Response): Promise<any> => {
 
     const baseUrl = process.env.BASE_URL || "http://localhost:3000";
 
+    const token = jwt.sign(
+      { id: user._id, name: user.email, firstName: user.firstName },
+      JWT_SECRET,
+      {
+        expiresIn: "12h",
+      }
+    );
+
     return res.json({
+      token,
       msg: "User created successfully proceed to Login",
       brainLink: `${baseUrl}/brain/${hash}`,
       hash,

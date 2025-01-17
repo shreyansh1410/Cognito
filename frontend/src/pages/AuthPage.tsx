@@ -150,10 +150,17 @@ export function AuthPage() {
           throw new Error(data.msg || data.error || "Signup failed");
         }
 
-        toast({
-          description:
-            data.msg || "Account created successfully! Please login.",
-        });
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("firstName", data.firstName);
+          login(email, data.token, data.firstName);
+          toast({
+            description: "Successfully logged in!",
+          });
+          navigate("/");
+        } else {
+          throw new Error("No token received");
+        }
         setIsLogin(true);
       }
     } catch (error: any) {
