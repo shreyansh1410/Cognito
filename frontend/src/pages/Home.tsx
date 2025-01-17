@@ -11,6 +11,7 @@ interface Content {
   date: string;
   link: string;
   content?: string;
+  createdAt?: string; // Add this field
 }
 type ContextType = {
   setRefresh: (prev: number) => void;
@@ -40,7 +41,17 @@ export function Home() {
             title: item.title,
             type: item.type,
             tags: item.tags || [],
-            date: item.date || new Date(item.createdAt).toLocaleDateString(),
+            date: item.createdAt
+              ? new Date(item.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })
+              : new Date().toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                }),
             link: item.link || item.url,
             content: item.content || item.description,
           }))

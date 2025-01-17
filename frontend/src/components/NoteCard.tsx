@@ -128,7 +128,7 @@ export function NoteCard({
             <img
               src={link}
               alt={title}
-              className="w-full h-auto rounded-lg object-cover"
+              className="max-h-[400px] w-auto rounded-lg object-contain"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.src = "/placeholder.svg";
@@ -155,7 +155,7 @@ export function NoteCard({
   };
 
   return (
-    <Card>
+    <Card className="h-auto">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
         <CardTitle className="text-base font-medium">
           <div className="flex items-center gap-2">
@@ -174,14 +174,14 @@ export function NoteCard({
             }}
             onEdit={onEdit}
           />
-          <Button
+          {/* <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8"
             onClick={handleShare}
           >
             <Share2 className="h-4 w-4" />
-          </Button>
+          </Button> */}
           <Button
             variant="ghost"
             size="icon"

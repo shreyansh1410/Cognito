@@ -44,6 +44,8 @@ const ContentSchema = new mongoose.Schema({
   title: { type: String, required: true },
   tags: [{ type: Types.ObjectId, ref: "Tag" }],
   userId: { type: Types.ObjectId, ref: "User", required: true },
+},{
+  timestamps: true  // This will add createdAt and updatedAt fields
 });
 
 ContentSchema.index({ link: 1, userId: 1 }, { unique: true });

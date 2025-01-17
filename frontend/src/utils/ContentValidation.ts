@@ -1,7 +1,7 @@
 // URL pattern matchers
 const urlPatterns = {
     youtube: /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/,
-    twitter: /^https?:\/\/twitter\.com\/.+\/status\/.+/,
+    twitter: /^https?:\/\/x\.com\/.+\/status\/.+/,
     image: /\.(jpg|jpeg|png|gif|webp)$/i,
     article: /^https?:\/\/(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+(\/[a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=]*)?$/,
     audio: /\.(mp3|wav|ogg|m4a)$/i,
