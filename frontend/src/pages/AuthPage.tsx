@@ -4,6 +4,7 @@ import { useAuth } from "../context/authContext";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { toast } from "@/hooks/use-toast"; // Correct import path
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import {
   Card,
   CardContent,
@@ -20,12 +21,80 @@ import {
 } from "../components/ui/tabs";
 import { Label } from "../components/ui/label";
 
+interface AuthResponse {
+  token: string;
+  firstName: string;
+  email: string;
+  msg?: string;
+}
+
 export function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+  const handleAuthSuccess = (data: AuthResponse) => {
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("firstName", data.firstName);
+    localStorage.setItem("email", data.email);
+    login(data.email, data.token, data.firstName);
+    toast({
+      description: data.msg || "Successfully logged in!",
+    });
+    navigate("/");
+  };
+
+  const handleGoogleSuccess = async (
+    credentialResponse: CredentialResponse
+  ) => {
+    try {
+      setIsLoading(true);
+
+      if (!credentialResponse.credential) {
+        throw new Error("No credentials received");
+      }
+
+      const response = await fetch(`${BACKEND_URL}/api/v1/auth/google-auth`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ token: credentialResponse.credential }),
+      });
+
+      // Log the response for debugging
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        throw new Error(errorText || "Failed to authenticate");
+      }
+
+      const data = await response.json();
+      handleAuthSuccess(data);
+    } catch (error: any) {
+      console.error("Google Auth Error:", error);
+      toast({
+        variant: "destructive",
+        description: error.message || "Authentication failed",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleFailure = () => {
+    toast({
+      variant: "destructive",
+      description: "Google login failed. Please try again.",
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,6 +229,12 @@ export function AuthPage() {
                   {isLoading ? "Please wait..." : "Login"}
                 </Button>
               </form>
+              <div className="flex justify-center mt-4">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleFailure}
+                />
+              </div>
             </TabsContent>
             <TabsContent value="signup">
               <form onSubmit={handleSubmit}>
