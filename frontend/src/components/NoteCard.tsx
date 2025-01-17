@@ -9,6 +9,7 @@ import {
   Youtube,
   Image,
   FileAudio,
+  Link,
 } from "lucide-react";
 import { useEffect } from "react";
 
@@ -16,14 +17,21 @@ interface NoteCardProps {
   id: string;
   title: string;
   content?: string;
-  type: "document" | "tweet" | "video" | "image" | "article" | "audio";
+  type: "document" | "tweet" | "video" | "image" | "article" | "audio" | "link";
   tags: string[];
   date: string;
   link: string;
   onDelete: () => void;
   onEdit: (data: {
     title: string;
-    type: "document" | "tweet" | "video" | "image" | "article" | "audio";
+    type:
+      | "document"
+      | "tweet"
+      | "video"
+      | "image"
+      | "article"
+      | "audio"
+      | "link";
     link: string;
     tags: string[];
   }) => void;
@@ -74,12 +82,13 @@ export function NoteCard({
     image: Image,
     article: FileText,
     audio: FileAudio,
+    link: Link
   }[type];
 
-  const handleShare = () => {
-    // Implement share functionality
-    console.log("Share note:", id);
-  };
+  // const handleShare = () => {
+  //   // Implement share functionality
+  //   console.log("Share note:", id);
+  // };
 
   const getYouTubeVideoId = (url: string) => {
     const urlParams = new URL(url).searchParams;

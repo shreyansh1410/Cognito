@@ -26,10 +26,17 @@ type ContentType =
   | "video"
   | "image"
   | "article"
-  | "audio";
+  | "audio"
+  | "link";
 
 // Editable type (for editing - matches backend)
-type EditableContentType = "video" | "image" | "article" | "audio" | "tweet";
+type EditableContentType =
+  | "video"
+  | "image"
+  | "article"
+  | "audio"
+  | "tweet"
+  | "link";
 
 interface EditContentDialogProps {
   id: string;
@@ -121,7 +128,9 @@ export function EditContentDialog({
   const isEditableContentType = (
     type: ContentType
   ): type is EditableContentType => {
-    return ["video", "image", "article", "audio", "tweet"].includes(type);
+    return ["video", "image", "article", "audio", "tweet", "link"].includes(
+      type
+    );
   };
 
   // Disable edit button if content type isn't editable
@@ -170,6 +179,7 @@ export function EditContentDialog({
                 <SelectItem value="article">Article</SelectItem>
                 <SelectItem value="audio">Audio</SelectItem>
                 <SelectItem value="tweet">Tweet</SelectItem>
+                <SelectItem value="link">Link</SelectItem>
               </SelectContent>
             </Select>
           </div>

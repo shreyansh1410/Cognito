@@ -88,7 +88,7 @@ export const editContent = async (
   contentId: string,
   data: {
     title: string;
-    type: "document" | "tweet" | "video" | "image" | "article" | "audio";
+    type: "document" | "tweet" | "video" | "image" | "article" | "audio" | "link";
     link: string;
     tags: string[];
   }

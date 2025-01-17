@@ -23,10 +23,10 @@ const upload = multer({
 
 // Modified schema to make link optional
 const createContentBody = zod.object({
-  type: zod.enum(["image", "video", "article", "audio", "tweet"], {
+  type: zod.enum(["image", "video", "article", "audio", "tweet", "link"], {
     errorMap: () => ({
       message:
-        "Invalid content type. Allowed types are: image, video, article, audio, tweet",
+        "Invalid content type. Allowed types are: image, video, article, audio, tweet, links",
     }),
   }),
   link: zod.string().url().optional(), // Make link optional
@@ -61,7 +61,7 @@ router.post(
         type: req.body.type,
         link: link,
         title: req.body.title,
-        tags: req.body.tags
+        tags: req.body.tags,
       };
 
       const parseResult = createContentBody.safeParse(contentData);

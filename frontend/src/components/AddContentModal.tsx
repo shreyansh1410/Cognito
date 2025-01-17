@@ -23,7 +23,7 @@ import {
 } from "./ui/select";
 import { createContent, uploadFile } from "../services/api";
 
-const contentTypes = ["image", "video", "article", "audio", "tweet"];
+const contentTypes = ["image", "video", "article", "audio", "tweet", "link"];
 
 const initialTags = [
   "productivity",

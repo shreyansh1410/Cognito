@@ -37,16 +37,19 @@ const TagSchema = new mongoose.Schema({
 });
 
 //content schema
-const contentTypes = ["image", "video", "article", "audio", "tweet"]; // Extend as needed
-const ContentSchema = new mongoose.Schema({
-  link: { type: String, required: true },
-  type: { type: String, enum: contentTypes, required: true },
-  title: { type: String, required: true },
-  tags: [{ type: Types.ObjectId, ref: "Tag" }],
-  userId: { type: Types.ObjectId, ref: "User", required: true },
-},{
-  timestamps: true  // This will add createdAt and updatedAt fields
-});
+const contentTypes = ["image", "video", "article", "audio", "tweet", "link"]; // Extend as needed
+const ContentSchema = new mongoose.Schema(
+  {
+    link: { type: String, required: true },
+    type: { type: String, enum: contentTypes, required: true },
+    title: { type: String, required: true },
+    tags: [{ type: Types.ObjectId, ref: "Tag" }],
+    userId: { type: Types.ObjectId, ref: "User", required: true },
+  },
+  {
+    timestamps: true, // This will add createdAt and updatedAt fields
+  }
+);
 
 ContentSchema.index({ link: 1, userId: 1 }, { unique: true });
 

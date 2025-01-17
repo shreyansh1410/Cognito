@@ -15,7 +15,7 @@ const navigation = [
   { name: "Tweets", type: "tweet", icon: Twitter },
   { name: "Videos", type: "video", icon: Youtube },
   { name: "Documents", type: "document", icon: FileText },
-  { name: "Links", type: "article", icon: Link2 },
+  { name: "Links", type: "link", icon: Link2 },
   { name: "Tags", type: "tags", icon: Hash },
   {name: "Images", type: "image", icon: Image}
 ];

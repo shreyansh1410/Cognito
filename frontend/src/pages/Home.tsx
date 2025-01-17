@@ -1,4 +1,4 @@
-import { act, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { NoteCard } from "../components/NoteCard";
 import { fetchContent, deleteContent, editContent } from "../services/api";
 import { useOutletContext } from "react-router-dom";
@@ -6,7 +6,7 @@ import { useOutletContext } from "react-router-dom";
 interface Content {
   id: string;
   title: string;
-  type: "document" | "tweet" | "video" | "image" | "article" | "audio";
+  type: "document" | "tweet" | "video" | "image" | "article" | "audio" | "link";
   tags: string[];
   date: string;
   link: string;
@@ -82,6 +82,8 @@ export function Home() {
       return content.filter((item) => item.tags && item.tags.length > 0);
     if (activeFilter === "image")
       return content.filter((item) => item.type === "image");
+    if (activeFilter === "link")
+      return content.filter((item) => item.type === "link");
     return content;
   };
 
@@ -105,7 +107,14 @@ export function Home() {
     id: string,
     newData: {
       title: string;
-      type: "document" | "tweet" | "video" | "image" | "article" | "audio";
+      type:
+        | "document"
+        | "tweet"
+        | "video"
+        | "image"
+        | "article"
+        | "audio"
+        | "link";
       link: string;
       tags: string[];
     }
