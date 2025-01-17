@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { act, useEffect, useState } from "react";
 import { NoteCard } from "../components/NoteCard";
 import { fetchContent, deleteContent, editContent } from "../services/api";
 import { useOutletContext } from "react-router-dom";
@@ -11,51 +11,50 @@ interface Content {
   date: string;
   link: string;
   content?: string;
-  createdAt?: string; // Add this field
+  createdAt?: string;
 }
+
 type ContextType = {
   setRefresh: (prev: number) => void;
   refresh: number;
+  activeFilter: string;
 };
 
 export function Home() {
   const [content, setContent] = useState<Content[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { refresh, setRefresh } = useOutletContext<ContextType>();
+  const { refresh, setRefresh, activeFilter } = useOutletContext<ContextType>();
 
   useEffect(() => {
     const loadContent = async () => {
       try {
         const response = await fetchContent();
-        console.log("Raw API response:", response);
-
-        // Handle different response structures
         const contentData = Array.isArray(response)
           ? response
           : response.content || response.data || [];
 
-        setContent(
-          contentData.map((item: any) => ({
-            id: item.id || item._id,
-            title: item.title,
-            type: item.type,
-            tags: item.tags || [],
-            date: item.createdAt
-              ? new Date(item.createdAt).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })
-              : new Date().toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                }),
-            link: item.link || item.url,
-            content: item.content || item.description,
-          }))
-        );
+        const formattedContent = contentData.map((item: any) => ({
+          id: item.id || item._id,
+          title: item.title,
+          type: item.type,
+          tags: item.tags || [],
+          date: item.createdAt
+            ? new Date(item.createdAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })
+            : new Date().toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              }),
+          link: item.link || item.url,
+          content: item.content || item.description,
+        }));
+
+        setContent(formattedContent);
       } catch (err) {
         console.error("Content loading error:", err);
         setError(
@@ -70,6 +69,21 @@ export function Home() {
 
     loadContent();
   }, [refresh]);
+
+  const getFilteredContent = () => {
+    if (activeFilter === "all") return content;
+    if (activeFilter === "document")
+      return content.filter((item) => item.type === "document");
+    if (activeFilter === "tweet")
+      return content.filter((item) => item.type === "tweet");
+    if (activeFilter === "video")
+      return content.filter((item) => item.type === "video");
+    if (activeFilter === "tags")
+      return content.filter((item) => item.tags && item.tags.length > 0);
+    if (activeFilter === "image")
+      return content.filter((item) => item.type === "image");
+    return content;
+  };
 
   const handleDelete = async (id: string) => {
     const userConfirmed = window.confirm(
@@ -122,10 +136,12 @@ export function Home() {
     return <div className="text-center mt-8 text-red-500">{error}</div>;
   }
 
+  const filteredContent = getFilteredContent();
+
   return (
     <div className="p-6">
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {content.map((item) => (
+        {filteredContent.map((item) => (
           <NoteCard
             key={item.id}
             id={item.id}
@@ -140,6 +156,11 @@ export function Home() {
           />
         ))}
       </div>
+      {filteredContent.length === 0 && (
+        <div className="text-center mt-8 text-gray-500">
+          No content found for this category.
+        </div>
+      )}
     </div>
   );
 }
