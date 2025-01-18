@@ -1,8 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy, Profile } from "passport-google-oauth20";
 import dotenv from "dotenv";
-import { Request, Response, NextFunction } from "express";
-import { User } from "../db"; // Adjust based on your file structure
+import { User } from "../db";
 
 dotenv.config();
 
