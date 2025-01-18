@@ -15,6 +15,7 @@ app.use((req, res, next) => {
     "http://localhost:3000",
     "https://cognito-theta.vercel.app",
     "https://cognito-86vu.onrender.com",
+    "https://play.google.com",
   ];
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {
