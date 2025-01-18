@@ -1,0 +1,21 @@
+name: Keep Second Brain Server Active
+
+on:
+  schedule:
+    - cron: "*/10 * * * *" # Runs every 10 minutes
+
+jobs:
+  ping_api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send GET request to Second Brain Server
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.RENDER_API_URL }}/ping)
+          if [ $response -eq 200 ]; then
+            echo "Ping successful"
+          else
+            echo "Ping failed with status code $response"
+            exit 1
+          fi
+        env:
+          RENDER_API_URL: ${{ secrets.RENDER_API_URL }}
