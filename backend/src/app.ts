@@ -9,24 +9,36 @@ dotenv.config({ path: path.join(__dirname, "../.env") });
 const app = express();
 const PORT = process.env.PORT;
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://cognito-theta.vercel.app",
+  "https://cognito-86vu.onrender.com",
+  "https://play.google.com",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "https://cognito-theta.vercel.app",
-      "https://cognito-86vu.onrender.com",
-      "https://play.google.com",
-    ],
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) === -1) {
+        return callback(
+          new Error("The CORS policy does not allow access from this origin."),
+          false
+        );
+      }
+      return callback(null, true);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    exposedHeaders: [
-      "Access-Control-Allow-Origin",
-      "Access-Control-Allow-Credentials",
-    ],
   })
 );
+
+app.options("*", cors());
+
 // Important: These headers must come after CORS middleware
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");

@@ -12,6 +12,10 @@ router.post(
   "/google-auth",
   async (req: Request, res: Response): Promise<any> => {
     try {
+      if (req.method === "OPTIONS") {
+        return res.status(200).end();
+      }
+
       const { token } = req.body;
 
       if (!token) {
@@ -49,7 +53,7 @@ router.post(
           email: user.email,
           firstName: user.firstName,
         },
-        process.env.JWT_SECRET as string,
+        process.env.JWT_SECRET as string
       );
 
       return res.json({

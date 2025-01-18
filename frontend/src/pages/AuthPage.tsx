@@ -64,6 +64,7 @@ export function AuthPage() {
         },
         credentials: "include",
         body: JSON.stringify({ token: credentialResponse.credential }),
+        mode: "cors",
       });
 
       // Log the response for debugging
