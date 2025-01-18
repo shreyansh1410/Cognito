@@ -2,7 +2,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { EditContentDialog } from "./EditContentDialog";
 import { Button } from "./ui/button";
 import {
-  Share2,
   Trash2,
   FileText,
   Twitter,
@@ -82,7 +81,7 @@ export function NoteCard({
     image: Image,
     article: FileText,
     audio: FileAudio,
-    link: Link
+    link: Link,
   }[type];
 
   // const handleShare = () => {

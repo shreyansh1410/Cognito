@@ -50,7 +50,6 @@ router.post(
           firstName: user.firstName,
         },
         process.env.JWT_SECRET as string,
-        { expiresIn: "12h" }
       );
 
       return res.json({

@@ -24,7 +24,7 @@ export function Home() {
   const [content, setContent] = useState<Content[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { refresh, setRefresh, activeFilter } = useOutletContext<ContextType>();
+  const { refresh, activeFilter } = useOutletContext<ContextType>();
 
   useEffect(() => {
     const loadContent = async () => {
