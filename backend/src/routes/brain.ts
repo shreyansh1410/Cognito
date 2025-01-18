@@ -14,7 +14,7 @@ router.get("/", async (req: Request, res: Response): Promise<any> => {
   res.send("Hello");
 });
 
-const baseUrl = process.env.BASE_URL || "http://localhost:3000/api/v1";
+const baseUrl = `${process.env.BASE_URL}/api/v1` || "http://localhost:3000/api/v1";
 
 //does this get all the links of a user
 router.post(
