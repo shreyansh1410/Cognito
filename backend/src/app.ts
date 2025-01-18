@@ -46,6 +46,10 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello World");
 });
 
+app.get("/ping", (req: Request, res: Response) => {
+  res.status(200).send("Server is alive");
+});
+
 app.use("/api/v1", router);
 app.use(
   (
