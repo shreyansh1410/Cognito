@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}api/v1` || "http://localhost:3000/api/v1";
+const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}/api/v1` || "http://localhost:3000/api/v1";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -61,10 +61,8 @@ export const createContent = async (data: {
 export const fetchContent = async () => {
   try {
     const response = await api.get("/content");
-    // Log the raw response for debugging
     console.log("Raw API Response:", response);
 
-    // Return the data directly, letting the component handle the structure
     return response.data;
   } catch (error) {
     console.error("Error fetching content:", error);
