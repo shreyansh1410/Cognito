@@ -9,28 +9,17 @@ dotenv.config({ path: path.join(__dirname, "../.env") });
 const app = express();
 const PORT = process.env.PORT;
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "https://cognito-theta.vercel.app",
-      "https://cognito-86vu.onrender.com",
-    ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    exposedHeaders: [
-      "Access-Control-Allow-Origin",
-      "Access-Control-Allow-Credentials",
-    ],
-  })
-);
-// Important: These headers must come after CORS middleware
 app.use((req, res, next) => {
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://cognito-theta.vercel.app",
+  ];
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
   res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
-  res.header("Access-Control-Allow-Origin", "https://cognito-theta.vercel.app");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
