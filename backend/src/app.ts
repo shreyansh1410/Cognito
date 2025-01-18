@@ -11,7 +11,7 @@ const PORT = process.env.PORT;
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:3000", "https://cognito-theta.vercel.app/"],
+    origin: ["http://localhost:5173", "http://localhost:3000", "https://cognito-theta.vercel.app/", "https://cognito-86vu.onrender.com/"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
