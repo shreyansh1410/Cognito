@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:3000/api/v1";
+const API_BASE_URL = import.meta.env.BASE_URL || "http://localhost:3000/api/v1";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -88,7 +88,14 @@ export const editContent = async (
   contentId: string,
   data: {
     title: string;
-    type: "document" | "tweet" | "video" | "image" | "article" | "audio" | "link";
+    type:
+      | "document"
+      | "tweet"
+      | "video"
+      | "image"
+      | "article"
+      | "audio"
+      | "link";
     link: string;
     tags: string[];
   }
