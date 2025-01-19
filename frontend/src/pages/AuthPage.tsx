@@ -289,6 +289,12 @@ export function AuthPage() {
                       minLength={8}
                     />
                   </div>
+                  <div className="flex justify-center mt-4">
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={handleGoogleFailure}
+                    />
+                  </div>
                 </div>
                 <Button
                   className="w-full mt-6"

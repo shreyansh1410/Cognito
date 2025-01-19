@@ -15,6 +15,7 @@ const allowedOrigins = [
   "https://cognito-theta.vercel.app",
   "https://cognito-86vu.onrender.com",
   "https://play.google.com",
+  "https://cognito.shreyanshshukla.me",
 ];
 
 app.use(
