@@ -25,12 +25,14 @@ interface AuthResponse {
   token: string;
   firstName: string;
   email: string;
+  userId: string;
   msg?: string;
 }
 
 export function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { login } = useAuth();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -39,11 +41,12 @@ export function AuthPage() {
     localStorage.setItem("token", data.token);
     localStorage.setItem("firstName", data.firstName);
     localStorage.setItem("email", data.email);
-    login(data.email, data.token, data.firstName);
+    localStorage.setItem("userId", data.userId);
+    login(data.email, data.token, data.firstName, data.userId);
     toast({
       description: data.msg || "Successfully logged in!",
     });
-    navigate("/");
+    navigate(`/`);
   };
 
   const handleGoogleSuccess = async (
@@ -124,11 +127,11 @@ export function AuthPage() {
         if (data.token) {
           localStorage.setItem("token", data.token);
           localStorage.setItem("firstName", data.firstName);
-          login(email, data.token, data.firstName);
+          login(email, data.token, data.firstName, data.userId);
           toast({
             description: "Successfully logged in!",
           });
-          navigate("/");
+          navigate(`/`);
         } else {
           throw new Error("No token received");
         }
@@ -154,11 +157,11 @@ export function AuthPage() {
         if (data.token) {
           localStorage.setItem("token", data.token);
           localStorage.setItem("firstName", data.firstName);
-          login(email, data.token, data.firstName);
+          login(email, data.token, data.firstName, data.userId);
           toast({
             description: "Successfully logged in!",
           });
-          navigate("/");
+          navigate(`/`);
         } else {
           throw new Error("No token received");
         }

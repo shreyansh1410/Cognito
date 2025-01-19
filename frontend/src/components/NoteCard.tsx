@@ -20,8 +20,8 @@ interface NoteCardProps {
   tags: string[];
   date: string;
   link: string;
-  onDelete: () => void;
-  onEdit: (data: {
+  onDelete?: () => void;
+  onEdit?: (data: {
     title: string;
     type:
       | "document"
@@ -171,34 +171,32 @@ export function NoteCard({
             {title}
           </div>
         </CardTitle>
-        <div className="flex gap-1">
-          <EditContentDialog
-            id={id}
-            initialData={{
-              title,
-              type,
-              link,
-              tags,
-            }}
-            onEdit={onEdit}
-          />
-          {/* <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={handleShare}
-          >
-            <Share2 className="h-4 w-4" />
-          </Button> */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={onDelete}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        {(onEdit || onDelete) && (
+          <div className="flex gap-1">
+            {onEdit && (
+              <EditContentDialog
+                id={id}
+                initialData={{
+                  title,
+                  type,
+                  link,
+                  tags,
+                }}
+                onEdit={onEdit}
+              />
+            )}
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={onDelete}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         {renderContent()}

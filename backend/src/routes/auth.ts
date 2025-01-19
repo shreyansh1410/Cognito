@@ -60,6 +60,7 @@ router.post(
         token: jwtToken,
         firstName: user.firstName,
         email: user.email,
+        userId: user._id,
       });
     } catch (error) {
       console.error("Google auth error:", error);

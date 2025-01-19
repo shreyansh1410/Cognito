@@ -13,7 +13,11 @@ router.get("/", async (req: Request, res: Response): Promise<any> => {
   res.send("Hello");
 });
 
-const baseUrl = `${process.env.BASE_URL}/api/v1` || "http://localhost:3000/api/v1";
+const baseUrl =
+  `${process.env.BASE_URL}/api/v1` || "http://localhost:3000/api/v1";
+
+const frontendUrl =
+  `${process.env.FRONTEND_URL}/api/v1` || "http://localhost:5173";
 
 //does this get all the links of a user
 router.post(
@@ -55,7 +59,7 @@ router.post(
 
       return res.status(200).json({
         msg: "Brain share link retrieved successfully",
-        shareLink: `${baseUrl}/brain/${link.hash}`,
+        shareLink: `${frontendUrl}/brain/${link.hash}`,
         hash: link.hash, // Adding hash for debugging
       });
     } catch (err) {
@@ -68,48 +72,47 @@ router.post(
   }
 );
 
-router.get(
-  "/:shareLink",
-  userMiddleware,
-  async (req: Request, res: Response): Promise<any> => {
-    if (!req.user?.id)
+router.get("/:shareLink", async (req: Request, res: Response): Promise<any> => {
+  // if (!req.user?.id)
+  //   return res.status(404).json({
+  //     msg: "Please log in to see the brain",
+  //   });
+  try {
+    const { shareLink } = req.params;
+    const link = await Link.findOne({
+      hash: shareLink,
+    });
+
+    if (!link) {
       return res.status(404).json({
-        msg: "Please log in to see the brain",
+        msg: "User not found",
       });
-    try {
-      const { shareLink } = req.params;
-      const link = await Link.findOne({
-        hash: shareLink,
-      });
-
-      if (!link) {
-        return res.status(404).json({
-          msg: "User not found",
-        });
-      }
-      const userId = link.userId;
-      const contents = await Content.find({
-        userId: link.userId,
-      }).populate("tags", "title");
-
-      if (!contents) {
-        return res.status(500).json({
-          msg: "User does not have any content",
-        });
-      }
-
-      return res.status(200).json({
-        contents: contents.map((content) => ({
-          type: content.type,
-          title: content.title,
-          link: content.link,
-          tags: content.tags,
-        })),
-      });
-    } catch (err) {
-      console.log(err);
     }
+    const userId = link.userId;
+    const contents = await Content.find({
+      userId: link.userId,
+    }).populate("tags", "title");
+
+    if (!contents) {
+      return res.status(500).json({
+        msg: "User does not have any content",
+      });
+    }
+
+    return res.status(200).json({
+      contents: contents.map((content) => ({
+        id: content._id.toString(),
+        type: content.type,
+        title: content.title,
+        link: content.link,
+        tags: content.tags.map((tag: any) => tag.title), // Convert tag objects to strings
+        createdAt: content.createdAt,
+      })),
+      userId: userId,
+    });
+  } catch (err) {
+    console.log(err);
   }
-);
+});
 
 export default router;

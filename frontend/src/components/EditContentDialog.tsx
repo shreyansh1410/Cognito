@@ -46,7 +46,7 @@ interface EditContentDialogProps {
     link: string;
     tags: string[];
   };
-  onEdit: (newData: {
+  onEdit?: (newData: {
     title: string;
     type: EditableContentType;
     link: string;
@@ -79,36 +79,40 @@ export function EditContentDialog({
     // Only allow submission if type is a valid EditableContentType
     if (isEditableContentType(formData.type)) {
       try {
-        if (file) {
-          // If there's a file, use FormData
-          const formData: any = new FormData();
-          formData.append("file", file);
-          formData.append("type", formData.type);
-          formData.append("title", formData.title);
-          formData.append("tags", JSON.stringify(processedTags));
+        if (onEdit) {
+          if (file) {
+            // If there's a file, use FormData
+            const formData: any = new FormData();
+            formData.append("file", file);
+            formData.append("type", formData.type);
+            formData.append("title", formData.title);
+            formData.append("tags", JSON.stringify(processedTags));
 
-          const response = await axios.put("/api/content/edit", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-            onUploadProgress: (progressEvent) => {
-              const progress = progressEvent.total
-                ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
-                : 0;
-              setUploadProgress(progress);
-            },
-          });
+            const response = await axios.put("/api/content/edit", formData, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+              onUploadProgress: (progressEvent) => {
+                const progress = progressEvent.total
+                  ? Math.round(
+                      (progressEvent.loaded * 100) / progressEvent.total
+                    )
+                  : 0;
+                setUploadProgress(progress);
+              },
+            });
 
-          onEdit(response.data.content);
-        } else {
-          // If using existing link or new link URL
-          onEdit({
-            ...formData,
-            type: formData.type,
-            tags: processedTags,
-          });
+            onEdit(response.data.content);
+          } else {
+            // If using existing link or new link URL
+            onEdit({
+              ...formData,
+              type: formData.type,
+              tags: processedTags,
+            });
+          }
+          setIsOpen(false);
         }
-        setIsOpen(false);
       } catch (error) {
         console.error("Error updating content:", error);
       }
