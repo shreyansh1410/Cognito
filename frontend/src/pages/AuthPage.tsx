@@ -32,7 +32,7 @@ interface AuthResponse {
 export function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const navigate = useNavigate();
   const { login } = useAuth();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;

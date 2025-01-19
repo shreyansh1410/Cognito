@@ -5,7 +5,7 @@ import { Header } from "../components/Header";
 import { NoteCard } from "../components/NoteCard";
 import { Sidebar } from "../components/Sidebar";
 import { AddContentModal } from "../components/AddContentModal";
-import { EditContentDialog } from "../components/EditContentDialog";
+// import { EditContentDialog } from "../components/EditContentDialog";
 
 interface Content {
   id: string;

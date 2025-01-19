@@ -17,7 +17,9 @@ const baseUrl =
   `${process.env.BASE_URL}/api/v1` || "http://localhost:3000/api/v1";
 
 const frontendUrl =
-  `${process.env.FRONTEND_URL}/api/v1` || "http://localhost:5173";
+  `${process.env.FRONTEND_URL}/api/v1` ||
+  "http://localhost:5173" ||
+  "https://cognito.shreyanshshukla.me/api/v1";
 
 //does this get all the links of a user
 router.post(
