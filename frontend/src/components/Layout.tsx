@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { AddContentModal } from "./AddContentModal";
 
-export function Layout() {
+interface LayoutProps {
+  children?: ReactNode;
+}
+
+export function Layout({ children }: LayoutProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isAddContentModalOpen, setIsAddContentModalOpen] = useState(false);
   const [refresh, setRefresh] = useState(0);
@@ -25,7 +29,9 @@ export function Layout() {
       >
         <Header openAddContentModal={() => setIsAddContentModalOpen(true)} />
         <div className="p-6">
-          <Outlet context={{ setRefresh, refresh, activeFilter }} />
+          {children || (
+            <Outlet context={{ setRefresh, refresh, activeFilter }} />
+          )}
         </div>
       </main>
       {isAddContentModalOpen && (

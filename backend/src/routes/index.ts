@@ -5,6 +5,7 @@ import contentRouter from "./content";
 import brainRouter from "./brain";
 import authRouter from "./auth";
 import uploadRouter from "./upload";
+import profileRouter from "./profile";
 
 const router = express.Router();
 // Define user-related routes
@@ -18,5 +19,6 @@ router.use("/content", contentRouter);
 router.use("/brain", brainRouter);
 router.use("/auth", authRouter);
 router.use("/upload", uploadRouter);
+router.use("/profile", profileRouter);
 
 export { router };

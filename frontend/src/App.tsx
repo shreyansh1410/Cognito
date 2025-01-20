@@ -10,6 +10,7 @@ import { Layout } from "./components/Layout";
 import { Home } from "./pages/Home";
 import { AuthPage } from "./pages/AuthPage";
 import { BrainView } from "./pages/BrainView";
+import { ProfilePage } from "./pages/ProfilePage";
 import "./App.css";
 import { Toaster } from "./components/ui/toaster";
 
@@ -40,10 +41,22 @@ function App() {
             <Route index element={<Home />} />
           </Route>
           <Route
-            path="/api/v1/brain/:shareLink"
+            path="/brain/:shareLink"
             element={
               <ProtectedRoute>
-                <BrainView />
+                <Layout>
+                  <BrainView />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ProfilePage />
+                </Layout>
               </ProtectedRoute>
             }
           />
