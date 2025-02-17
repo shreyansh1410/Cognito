@@ -8,7 +8,6 @@ import uploadRouter from "./upload";
 import profileRouter from "./profile";
 
 const router = express.Router();
-// Define user-related routes
 
 router.get("/", (req: Request, res: Response) => {
   res.send("Hello World from home");

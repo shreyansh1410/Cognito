@@ -7,11 +7,10 @@ import { Request, Response } from "express";
 
 const router = express.Router();
 
-// Configure multer with Cloudinary storage
 const upload = multer({
   storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 10 * 1024 * 1024,
   },
 });
 
@@ -25,11 +24,10 @@ router.post(
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      // Cloudinary automatically uploads the file and req.file contains the result
-      // including the URL
+      // Cloudinary automatically uploads the file and req.file contains the result including the URL
       res.json({
         url: req.file.path,
-        public_id: req.file.filename, // Store this if you want to delete the file later
+        public_id: req.file.filename,
       });
     } catch (error) {
       console.error("Upload error:", error);

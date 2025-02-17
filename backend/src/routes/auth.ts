@@ -7,7 +7,6 @@ import * as crypto from "crypto";
 const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// New route to handle Google authentication
 router.post(
   "/google-auth",
   async (req: Request, res: Response): Promise<any> => {
@@ -22,7 +21,6 @@ router.post(
         return res.status(400).json({ msg: "No token provided" });
       }
 
-      // Verify Google token
       const ticket = await client.verifyIdToken({
         idToken: token,
         audience: process.env.GOOGLE_CLIENT_ID,
@@ -33,20 +31,17 @@ router.post(
         return res.status(400).json({ msg: "Invalid token" });
       }
 
-      // Find or create user
       let user = await User.findOne({ email: payload.email });
       if (!user) {
         user = new User({
           email: payload.email,
           firstName: payload.given_name,
           lastName: payload.family_name,
-          // Set a secure random password or handle passwordless auth
           password: crypto.randomBytes(32).toString("hex"),
         });
         await user.save();
       }
 
-      // Generate JWT
       const jwtToken = jwt.sign(
         {
           id: user._id,

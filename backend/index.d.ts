@@ -4,7 +4,6 @@ import {
   NextFunction as ExpressNextFunction,
 } from "express";
 
-// Common Type Definitions
 interface Content {
   id: string;
   type: "document" | "tweet" | "youtube" | "link";
@@ -26,7 +25,6 @@ interface User {
   updatedAt?: Date;
 }
 
-// Augment the Express Request interface
 declare global {
   namespace Express {
     interface Request {
@@ -38,7 +36,6 @@ declare global {
   }
 }
 
-// Environment Variables
 declare global {
   namespace NodeJS {
     interface ProcessEnv {

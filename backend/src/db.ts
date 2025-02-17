@@ -11,7 +11,6 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.log("MongoDB connection error:", err));
 
-//user schema
 const UserSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, unique: true },
@@ -21,7 +20,6 @@ const UserSchema = new mongoose.Schema(
     bio: { type: String, default: "" },
   },
   {
-    // This will make Mongoose rebuild indexes on model compilation
     autoIndex: true,
   }
 );
@@ -32,13 +30,11 @@ UserSchema.on("index", function (error) {
   }
 });
 
-//tag schema
 const TagSchema = new mongoose.Schema({
   title: { type: String, required: true, unique: true },
 });
 
-//content schema
-const contentTypes = ["image", "video", "article", "audio", "tweet", "link"]; // Extend as needed
+const contentTypes = ["image", "video", "article", "audio", "tweet", "link"];
 const ContentSchema = new mongoose.Schema(
   {
     link: { type: String, required: true },
@@ -48,13 +44,12 @@ const ContentSchema = new mongoose.Schema(
     userId: { type: Types.ObjectId, ref: "User", required: true },
   },
   {
-    timestamps: true, // This will add createdAt and updatedAt fields
+    timestamps: true,
   }
 );
 
 ContentSchema.index({ link: 1, userId: 1 }, { unique: true });
 
-//link schema
 const LinkSchema = new mongoose.Schema({
   hash: { type: String, requires: true },
   userId: { type: Types.ObjectId, ref: "User", required: true },

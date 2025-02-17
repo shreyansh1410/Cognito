@@ -1,4 +1,3 @@
-// URL pattern matchers
 const urlPatterns = {
   youtube: /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/,
   twitter: /^https?:\/\/x\.com\/.+\/status\/.+/,
@@ -15,7 +14,6 @@ export const validateContentType = (type: string, link: string): boolean => {
     case "tweet":
       return urlPatterns.twitter.test(link);
     case "video":
-      // Check for both direct video links and YouTube links
       return urlPatterns.video.test(link) || urlPatterns.youtube.test(link);
     case "image":
       return urlPatterns.image.test(link);

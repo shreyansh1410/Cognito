@@ -4,7 +4,6 @@ import { User } from "../db";
 
 const router = express.Router();
 
-// Get user profile
 router.get(
   "/",
   userMiddleware,
@@ -21,7 +20,6 @@ router.get(
   }
 );
 
-// Update user profile
 router.put(
   "/",
   userMiddleware,
@@ -34,7 +32,6 @@ router.put(
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Update fields
       if (firstName) user.firstName = firstName;
       if (lastName) user.lastName = lastName;
       if (email) user.email = email;
@@ -50,7 +47,6 @@ router.put(
   }
 );
 
-// Update password
 router.put(
   "/password",
   userMiddleware,
@@ -65,14 +61,13 @@ router.put(
 
       // For regular email/password users
       if (user.password) {
-        // Check if current password matches (plain text comparison as per your current implementation)
         if (currentPassword !== user.password) {
           return res
             .status(400)
             .json({ message: "Current password is incorrect" });
         }
 
-        user.password = newPassword; // Store new password (plain text as per current implementation)
+        user.password = newPassword;
         await user.save();
         return res.json({ message: "Password updated successfully" });
       } else {

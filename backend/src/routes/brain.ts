@@ -21,7 +21,6 @@ const frontendUrl =
   "http://localhost:5173" ||
   "https://cognito.shreyanshshukla.me/api/v1";
 
-//does this get all the links of a user
 router.post(
   "/share",
   userMiddleware,

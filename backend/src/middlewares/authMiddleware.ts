@@ -18,15 +18,15 @@ export const userMiddleware = (
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(403).json({ message: "UNAUTHORIZED" });
       }
-      const token = authHeader.split(" ")[1]; // Extract the token after 'Bearer '
+      const token = authHeader.split(" ")[1];
       if (!token)
         return res
           .status(401)
           .json({ msg: "Access denied, no token provided" });
       const decoded = jwt.verify(token, JWT_SECRET!);
       // console.log(decoded);
-      req.user = decoded as { id: string; email: string }; // Attach the user info to the request object
-      next(); // Proceed to the next middleware or route handler
+      req.user = decoded as { id: string; email: string };
+      next();
       resolve();
     } catch (err) {
       reject(err);

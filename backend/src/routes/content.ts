@@ -13,7 +13,6 @@ dotenv.config();
 
 const router = express.Router();
 
-// Configure multer with Cloudinary storage
 const upload = multer({
   storage,
   limits: {
@@ -21,7 +20,6 @@ const upload = multer({
   },
 });
 
-// Modified schema to make link optional
 const createContentBody = zod.object({
   type: zod.enum(["image", "video", "article", "audio", "tweet", "link"], {
     errorMap: () => ({
@@ -29,25 +27,22 @@ const createContentBody = zod.object({
         "Invalid content type. Allowed types are: image, video, article, audio, tweet, links",
     }),
   }),
-  link: zod.string().url().optional(), // Make link optional
+  link: zod.string().url().optional(),
   title: zod.string().nonempty(),
   tags: zod.array(zod.string().optional()),
 });
 
-// New combined route that handles both direct links and file uploads
 router.post(
   "/create",
   userMiddleware,
-  upload.single("file"), // Add multer middleware
+  upload.single("file"),
   async (req: Request, res: Response): Promise<any> => {
     try {
       let link: string;
 
-      // If a file was uploaded, use its URL
       if (req.file) {
         link = req.file.path;
       } else if (req.body.link) {
-        // If no file but a link was provided, use that
         link = req.body.link;
       } else {
         return res.status(400).json({
@@ -56,7 +51,6 @@ router.post(
         });
       }
 
-      // Prepare the data for validation
       const contentData = {
         type: req.body.type,
         link: link,
@@ -78,7 +72,6 @@ router.post(
         return res.status(401).json({ msg: "Unauthorized" });
       }
 
-      // Check if the link already exists
       let existingLink = await Link.findOne({ link });
       if (!existingLink) {
         existingLink = new Link({

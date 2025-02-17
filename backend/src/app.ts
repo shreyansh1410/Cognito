@@ -16,6 +16,7 @@ const allowedOrigins = [
   "https://cognito-86vu.onrender.com",
   "https://play.google.com",
   "https://cognito.shreyanshshukla.me",
+  "https://cognito-qq9p.onrender.com",
 ];
 
 app.use(
@@ -64,9 +65,9 @@ app.use(
   }
 );
 
-console.log(process.env.PORT);
-console.log(`mongouri: ${process.env.MONGO_URI}`);
-console.log(`jwtsecret: ${process.env.JWT_SECRET}`);
+// console.log(process.env.PORT);
+// console.log(`mongouri: ${process.env.MONGO_URI}`);
+// console.log(`jwtsecret: ${process.env.JWT_SECRET}`);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
