@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Bot, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";

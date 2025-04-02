@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { AIChatInterface } from "@/components/ai/AIChatInterface";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
