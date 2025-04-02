@@ -46,7 +46,7 @@ export function AuthPage() {
     toast({
       description: data.msg || "Successfully logged in!",
     });
-    navigate(`/`);
+    navigate(`/dashboard`);
   };
 
   const handleGoogleSuccess = async (
@@ -131,7 +131,7 @@ export function AuthPage() {
           toast({
             description: "Successfully logged in!",
           });
-          navigate(`/`);
+          navigate(`/dashboard`);
         } else {
           throw new Error("No token received");
         }
@@ -161,7 +161,7 @@ export function AuthPage() {
           toast({
             description: "Successfully logged in!",
           });
-          navigate(`/`);
+          navigate(`/dashboard`);
         } else {
           throw new Error("No token received");
         }

@@ -11,6 +11,7 @@ import { Home } from "./pages/Home";
 import { AuthPage } from "./pages/AuthPage";
 import { BrainView } from "./pages/BrainView";
 import { ProfilePage } from "./pages/ProfilePage";
+import { LandingPage } from "./pages/LandingPage";
 import "./App.css";
 import { Toaster } from "./components/ui/toaster";
 
@@ -20,7 +21,16 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   let { isAuthenticated } = useAuth();
   const token = localStorage.getItem("token");
   if (token) isAuthenticated = true;
-  return isAuthenticated ? <>{children}</> : <Navigate to="/auth" />;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/" />;
+};
+
+const AuthenticatedRedirect: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  let { isAuthenticated } = useAuth();
+  const token = localStorage.getItem("token");
+  if (token) isAuthenticated = true;
+  return isAuthenticated ? <Navigate to="/dashboard" /> : <>{children}</>;
 };
 
 function App() {
@@ -29,9 +39,17 @@ function App() {
       <Toaster />
       <Router>
         <Routes>
+          <Route 
+            path="/" 
+            element={
+              <AuthenticatedRedirect>
+                <LandingPage />
+              </AuthenticatedRedirect>
+            } 
+          />
           <Route path="/auth" element={<AuthPage />} />
           <Route
-            path="/"
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <Layout />
