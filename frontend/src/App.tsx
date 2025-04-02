@@ -6,12 +6,14 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/authContext";
+import { AIProvider } from "./context/aiContext";
 import { Layout } from "./components/Layout";
 import { Home } from "./pages/Home";
 import { AuthPage } from "./pages/AuthPage";
 import { BrainView } from "./pages/BrainView";
 import { ProfilePage } from "./pages/ProfilePage";
 import { LandingPage } from "./pages/LandingPage";
+import { AIChat } from "./pages/AIChat";
 import "./App.css";
 import { Toaster } from "./components/ui/toaster";
 
@@ -36,50 +38,62 @@ const AuthenticatedRedirect: React.FC<{ children: React.ReactNode }> = ({
 function App() {
   return (
     <AuthProvider>
-      <Toaster />
-      <Router>
-        <Routes>
-          <Route 
-            path="/" 
-            element={
-              <AuthenticatedRedirect>
-                <LandingPage />
-              </AuthenticatedRedirect>
-            } 
-          />
-          <Route path="/auth" element={<AuthPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Home />} />
-          </Route>
-          <Route
-            path="/brain/:shareLink"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <BrainView />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <ProfilePage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Router>
+      <AIProvider>
+        <Toaster />
+        <Router>
+          <Routes>
+            <Route 
+              path="/" 
+              element={
+                <AuthenticatedRedirect>
+                  <LandingPage />
+                </AuthenticatedRedirect>
+              } 
+            />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Home />} />
+            </Route>
+            <Route
+              path="/brain/:shareLink"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <BrainView />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProfilePage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ai"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AIChat />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Router>
+      </AIProvider>
     </AuthProvider>
   );
 }

@@ -4,8 +4,6 @@ import path from "path";
 
 dotenv.config({ path: path.join(__dirname, "../.env") });
 
-console.log(`inside db: ${process.env.MONGO_URI}`);
-
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))

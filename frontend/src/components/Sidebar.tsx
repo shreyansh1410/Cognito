@@ -44,7 +44,7 @@ export function Sidebar({
           className={`flex items-center gap-2 ${isCollapsed ? "hidden" : ""}`}
         >
           <Brain className="h-8 w-8 text-indigo-600" />
-          <span className="text-xl font-bold">Cognito</span>
+          <a href="/" className="text-xl font-bold hover:text-indigo-700 transition-colors">Cognito</a>
         </div>
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}

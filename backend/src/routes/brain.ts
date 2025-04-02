@@ -61,10 +61,10 @@ router.post(
       return res.status(200).json({
         msg: "Brain share link retrieved successfully",
         shareLink: `${frontendUrl}/brain/${link.hash}`,
-        hash: link.hash, // Adding hash for debugging
+        hash: link.hash,
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       return res.status(500).json({
         msg: "unable to fetch share link",
         error: err,
@@ -106,13 +106,13 @@ router.get("/:shareLink", async (req: Request, res: Response): Promise<any> => {
         type: content.type,
         title: content.title,
         link: content.link,
-        tags: content.tags.map((tag: any) => tag.title), // Convert tag objects to strings
+        tags: content.tags.map((tag: any) => tag.title),
         createdAt: content.createdAt,
       })),
       userId: userId,
     });
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 });
 

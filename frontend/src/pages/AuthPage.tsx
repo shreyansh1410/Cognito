@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -34,8 +34,17 @@ export function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   // const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+  useEffect(() => {
+    // Check URL parameters to determine if we should show signup tab
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('tab') === 'signup') {
+      setIsLogin(false);
+    }
+  }, [location]);
 
   const handleAuthSuccess = (data: AuthResponse) => {
     localStorage.setItem("token", data.token);
@@ -69,10 +78,6 @@ export function AuthPage() {
         body: JSON.stringify({ token: credentialResponse.credential }),
         mode: "cors",
       });
-
-      // Log the response for debugging
-      console.log("Response status:", response.status);
-      console.log("Response headers:", response.headers);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -137,7 +142,6 @@ export function AuthPage() {
         }
       } else {
         // Signup flow with detailed error logging
-        console.log("Attempting signup with:", { email, firstName, lastName }); // Log signup attempt
 
         const response = await fetch(`${BACKEND_URL}/api/v1/user/signup`, {
           method: "POST",
@@ -145,10 +149,7 @@ export function AuthPage() {
           body: JSON.stringify({ email, password, firstName, lastName }),
         });
 
-        // Log the raw response for debugging
-        console.log("Signup response status:", response.status);
         const data = await response.json();
-        console.log("Signup response data:", data);
 
         if (!response.ok) {
           throw new Error(data.msg || data.error || "Signup failed");

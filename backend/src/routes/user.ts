@@ -44,18 +44,15 @@ router.post("/signup", async (req: Request, res: Response): Promise<any> => {
     if (!success) return res.status(411).json({ msg: "Invalid input" });
     const { email, password, firstName, lastName } = req.body;
 
-    console.log("Received signup data:", { email, firstName, lastName }); // Log incoming data
-
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ msg: "User already exists" });
     }
 
     const user = new User({ email, password, firstName, lastName });
-    console.log("Created user object:", user); // Log user object
+
 
     await user.save();
-    console.log("User saved successfully"); // Log successful save
 
     const hash = generateHash();
     const link = new Link({
@@ -63,9 +60,7 @@ router.post("/signup", async (req: Request, res: Response): Promise<any> => {
       userId: user._id,
     });
 
-    console.log("Created link object:", link); // Log link object
     await link.save();
-    console.log("Link saved successfully"); // Log successful save
 
     const baseUrl = process.env.BASE_URL || "http://localhost:3000";
 

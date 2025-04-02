@@ -1,4 +1,3 @@
-// content.ts
 import express from "express";
 import { Request, Response } from "../../index";
 import dotenv from "dotenv";
@@ -238,7 +237,7 @@ router.delete(
       }
       return res.status(200).json({ message: "Content deleted successfully" });
     } catch (err) {
-      console.log(err);
+      console.error(err);
       return res.status(403).json({
         msg: "Delete failed",
         error: err,

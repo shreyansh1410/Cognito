@@ -61,7 +61,6 @@ export const createContent = async (data: {
 export const fetchContent = async () => {
   try {
     const response = await api.get("/content");
-    console.log("Raw API Response:", response);
 
     return response.data;
   } catch (error) {

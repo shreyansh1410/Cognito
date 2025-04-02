@@ -24,7 +24,6 @@ export const userMiddleware = (
           .status(401)
           .json({ msg: "Access denied, no token provided" });
       const decoded = jwt.verify(token, JWT_SECRET!);
-      // console.log(decoded);
       req.user = decoded as { id: string; email: string };
       next();
       resolve();

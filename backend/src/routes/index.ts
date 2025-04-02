@@ -6,6 +6,7 @@ import brainRouter from "./brain";
 import authRouter from "./auth";
 import uploadRouter from "./upload";
 import profileRouter from "./profile";
+import aiRouter from "./ai";
 
 const router = express.Router();
 
@@ -19,5 +20,6 @@ router.use("/brain", brainRouter);
 router.use("/auth", authRouter);
 router.use("/upload", uploadRouter);
 router.use("/profile", profileRouter);
+router.use("/ai", aiRouter);
 
 export { router };

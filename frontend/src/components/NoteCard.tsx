@@ -9,8 +9,10 @@ import {
   Image,
   FileAudio,
   Link,
+  Bot,
 } from "lucide-react";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface NoteCardProps {
   id: string;
@@ -47,6 +49,8 @@ export function NoteCard({
   onDelete,
   onEdit,
 }: NoteCardProps) {
+  const navigate = useNavigate();
+
   // Load Twitter widget script when needed
   useEffect(() => {
     if (type === "tweet") {
@@ -162,6 +166,20 @@ export function NoteCard({
     }
   };
 
+  const handleAskAI = () => {
+    // Store the note context in localStorage to be accessed by the AI page
+    const noteContext = {
+      id,
+      title,
+      content,
+      type,
+      link,
+      tags,
+    };
+    localStorage.setItem("ai_note_context", JSON.stringify(noteContext));
+    navigate("/ai");
+  };
+
   return (
     <Card className="h-auto">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
@@ -210,7 +228,18 @@ export function NoteCard({
             </span>
           ))}
         </div>
-        <div className="text-xs text-gray-500 mt-4">Added on {date}</div>
+        <div className="flex justify-between items-center mt-4">
+          <div className="text-xs text-gray-500">Added on {date}</div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1 text-xs"
+            onClick={handleAskAI}
+          >
+            <Bot className="h-3 w-3" />
+            Ask AI
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

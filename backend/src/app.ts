@@ -65,10 +65,6 @@ app.use(
   }
 );
 
-// console.log(process.env.PORT);
-// console.log(`mongouri: ${process.env.MONGO_URI}`);
-// console.log(`jwtsecret: ${process.env.JWT_SECRET}`);
-
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
