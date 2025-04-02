@@ -6,6 +6,7 @@ import { Card, CardContent } from "../ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
+import { useAI } from "@/context/aiContext";
 
 interface Message {
   role: "user" | "assistant";
@@ -13,6 +14,7 @@ interface Message {
 }
 
 export function AIChatInterface() {
+  const { addMessage } = useAI();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +22,6 @@ export function AIChatInterface() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Check for note context on component mount
   useEffect(() => {
     const noteContext = localStorage.getItem("ai_note_context");
     if (noteContext) {
@@ -41,12 +42,10 @@ export function AIChatInterface() {
     }
   }, []);
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Auto-resize textarea based on content
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "inherit";
@@ -54,115 +53,43 @@ export function AIChatInterface() {
     }
   }, [input]);
 
-  const callGeminiAPI = async (prompt: string, history: Message[]) => {
-    const apiKey = localStorage.getItem("gemini_api_key");
-    if (!apiKey) {
-      throw new Error("Gemini API key not found. Please add it in the AI settings.");
-    }
-
-    // Format the conversation history for Gemini API
-    const formattedHistory = history.map(msg => ({
-      role: msg.role === "user" ? "user" : "model",
-      parts: [{ text: msg.content }]
-    }));
-
-    // Add the current prompt
-    formattedHistory.push({
-      role: "user",
-      parts: [{ text: prompt }]
-    });
-
-    // Make the API call to Gemini
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: formattedHistory,
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        },
-        safetySettings: [
-          {
-            category: "HARM_CATEGORY_HARASSMENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          },
-          {
-            category: "HARM_CATEGORY_HATE_SPEECH",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          },
-          {
-            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          },
-          {
-            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-          }
-        ]
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || "Failed to get response from Gemini API");
-    }
-
-    const data = await response.json();
-    
-    // Extract the response text from Gemini API
-    if (data.candidates && data.candidates[0]?.content?.parts?.length > 0) {
-      return data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error("Invalid response format from Gemini API");
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
     const userMessage = { role: "user" as const, content: input };
     setMessages((prev) => [...prev, userMessage]);
+    addMessage(userMessage);
     setInput("");
     setIsLoading(true);
 
     try {
-      const useDirectApi = localStorage.getItem("use_direct_api") === "true";
-      let aiResponse;
+      const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+      
+      const response = await fetch(`${BACKEND_URL}/api/v1/ai/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          message: input,
+          history: messages,
+        }),
+      });
 
-      if (useDirectApi) {
-        aiResponse = await callGeminiAPI(input, messages);
-      } else {
-        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
-        
-        const response = await fetch(`${BACKEND_URL}/api/v1/ai/chat`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({
-            message: input,
-            history: messages,
-          }),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Backend API error:", errorText);
-          throw new Error(`Failed to get response from AI: ${response.status} ${errorText}`);
-        }
-
-        const data = await response.json();
-        aiResponse = data.response;
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Backend API error:", errorText);
+        throw new Error(`Failed to get response from AI: ${response.status} ${errorText}`);
       }
 
-      setMessages((prev) => [...prev, { role: "assistant", content: aiResponse }]);
+      const data = await response.json();
+      const aiResponse = data.response;
+      
+      const assistantMessage = { role: "assistant" as const, content: aiResponse };
+      setMessages((prev) => [...prev, assistantMessage]);
+      addMessage(assistantMessage);
     } catch (error) {
       console.error("AI Chat Error:", error);
       toast({
