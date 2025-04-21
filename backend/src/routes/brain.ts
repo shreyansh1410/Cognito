@@ -70,7 +70,6 @@ router.post(
 
 router.get("/:shareLink", async (req: Request, res: Response): Promise<any> => {
   try {
-    console.log("hello");
     const { shareLink } = req.params;
     
     const link = await Link.findOne({
