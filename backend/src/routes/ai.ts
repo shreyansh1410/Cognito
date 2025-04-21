@@ -5,6 +5,33 @@ import { userMiddleware } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
+// Helper: Detect tweet URL in message
+function extractTweetUrl(text: string): string | null {
+  const regex = /(https?:\/\/twitter\.com\/[A-Za-z0-9_]+\/status\/[0-9]+)/;
+  const match = text.match(regex);
+  return match ? match[1] : null;
+}
+
+// Helper: Fetch tweet content using Twitter oEmbed (no auth, gets HTML)
+async function fetchTweetContent(tweetUrl: string): Promise<string | null> {
+  try {
+    const oembedUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(tweetUrl)}`;
+    const response = await axios.get(oembedUrl);
+    // Extract the tweet text from the HTML (simple regex, not perfect but works for most)
+    const html = response.data.html;
+    const textMatch = html.match(/<p[^>]*>([\s\S]*?)<\/p>/);
+    if (textMatch) {
+      // Remove any HTML tags inside the <p>
+      const text = textMatch[1].replace(/<[^>]+>/g, '');
+      return text;
+    }
+    return null;
+  } catch (err) {
+    console.error('Failed to fetch tweet content:', err.message);
+    return null;
+  }
+}
+
 router.post("/chat", userMiddleware, async (req: Request, res: Response): Promise<any> => {
   try {
     const { message, history } = req.body;
@@ -19,6 +46,15 @@ router.post("/chat", userMiddleware, async (req: Request, res: Response): Promis
       return res.status(500).json({ error: "Gemini API key not configured on the server" });
     }
 
+    let tweetContext = '';
+    const tweetUrl = extractTweetUrl(message);
+    if (tweetUrl) {
+      const tweetText = await fetchTweetContent(tweetUrl);
+      if (tweetText) {
+        tweetContext = `\n\n[Referenced Tweet]\n${tweetText}\n`;
+      }
+    }
+
     const formattedHistory = history.map((msg: any) => ({
       role: msg.role === "user" ? "user" : "model",
       parts: [{ text: msg.content }]
@@ -26,7 +62,7 @@ router.post("/chat", userMiddleware, async (req: Request, res: Response): Promis
 
     formattedHistory.push({
       role: "user",
-      parts: [{ text: message }]
+      parts: [{ text: tweetContext ? (message + tweetContext) : message }]
     });
 
     const response = await axios.post(

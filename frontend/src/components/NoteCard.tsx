@@ -51,16 +51,13 @@ export function NoteCard({
 }: NoteCardProps) {
   const navigate = useNavigate();
 
-  // Load Twitter widget script when needed
   useEffect(() => {
     if (type === "tweet") {
-      // Remove existing script if any
       const existingScript = document.getElementById("twitter-widget");
       if (existingScript) {
         existingScript.remove();
       }
 
-      // Create and append new Twitter script
       const script = document.createElement("script");
       script.id = "twitter-widget";
       script.src = "https://platform.twitter.com/widgets.js";
@@ -69,7 +66,6 @@ export function NoteCard({
       document.body.appendChild(script);
 
       return () => {
-        // Cleanup script on component unmount
         const script = document.getElementById("twitter-widget");
         if (script) {
           script.remove();
@@ -86,12 +82,7 @@ export function NoteCard({
     article: FileText,
     audio: FileAudio,
     link: Link,
-  }[type];
-
-  // const handleShare = () => {
-  //   // Implement share functionality
-  //   console.log("Share note:", id);
-  // };
+  }[type]
 
   const getYouTubeVideoId = (url: string) => {
     const urlParams = new URL(url).searchParams;
@@ -99,14 +90,12 @@ export function NoteCard({
   };
 
   const formatTweetUrl = (url: string) => {
-    // Convert x.com URLs to twitter.com
     return url.replace("x.com", "twitter.com");
   };
 
   const renderContent = () => {
     switch (type) {
       case "tweet":
-        // Extract tweet ID from URL
         link = formatTweetUrl(link);
         const tweetId = link.split("/").pop();
         return (
@@ -167,7 +156,6 @@ export function NoteCard({
   };
 
   const handleAskAI = () => {
-    // Store the note context in localStorage to be accessed by the AI page
     const noteContext = {
       id,
       title,
@@ -230,15 +218,17 @@ export function NoteCard({
         </div>
         <div className="flex justify-between items-center mt-4">
           <div className="text-xs text-gray-500">Added on {date}</div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-1 text-xs"
-            onClick={handleAskAI}
-          >
-            <Bot className="h-3 w-3" />
-            Ask AI
-          </Button>
+          <div className="relative inline-block">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-1 text-xs relative z-10 border-blue-500 text-blue-500"
+              onClick={handleAskAI}
+            >
+              <Bot className="h-3 w-3" />
+              Ask AI
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
