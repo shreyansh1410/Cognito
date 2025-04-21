@@ -112,7 +112,8 @@ export const editContent = async (
 export const fetchShareLink = async () => {
   try {
     const response = await api.post("/brain/share", { isShare: true });
-    return response.data.shareLink;
+    // Construct the frontend share link using window.location.origin
+    return `${window.location.origin}/brain/${response.data.hash}`;
   } catch (error) {
     console.error("Error fetching share link:", error);
     throw error;

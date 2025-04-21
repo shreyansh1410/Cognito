@@ -25,7 +25,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-xs sm:w-full sm:mx-auto sm:top-1/2 sm:left-1/2 sm:fixed sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-lg sm:h-auto max-w-md w-full p-6 rounded-lg top-0 left-0 fixed h-full overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Share Brain</DialogTitle>
         </DialogHeader>

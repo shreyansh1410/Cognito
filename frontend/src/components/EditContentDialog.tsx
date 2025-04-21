@@ -151,7 +151,7 @@ export function EditContentDialog({
           <Pencil className="h-4 w-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-w-lg w-full sm:max-w-md sm:w-full p-6 sm:p-2 rounded-lg sm:rounded-b-none sm:rounded-t-lg sm:top-0 sm:left-0 sm:fixed sm:h-full sm:overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Content</DialogTitle>
         </DialogHeader>

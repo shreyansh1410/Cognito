@@ -172,7 +172,10 @@ export function AddContentModal({
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent
+        className="max-w-lg w-full p-6 rounded-lg fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 shadow-lg bg-white focus:outline-none"
+        style={{ maxHeight: '90vh', overflowY: 'auto' }}
+      >
         <DialogHeader>
           <DialogTitle>Add New Content</DialogTitle>
         </DialogHeader>

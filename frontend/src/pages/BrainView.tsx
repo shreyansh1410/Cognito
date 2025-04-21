@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/authContext";
-import { Header } from "../components/Header";
 import { NoteCard } from "../components/NoteCard";
 import { Sidebar } from "../components/Sidebar";
 import { AddContentModal } from "../components/AddContentModal";
-// import { EditContentDialog } from "../components/EditContentDialog";
 
 interface Content {
   id: string;
@@ -23,6 +21,7 @@ export function BrainView() {
   const [isAddContentOpen, setIsAddContentOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [ownerName, setOwnerName] = useState<string>("Unknown User");
   const { shareLink } = useParams();
   const { user } = useAuth();
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -37,9 +36,12 @@ export function BrainView() {
           throw new Error("Failed to fetch brain contents");
         }
         const data = await response.json();
-
-        setContents(data.contents);
+        
+        setContents(data.contents || []);
         setIsOwner(data.userId === user?.userId);
+        
+        // Simple direct assignment of owner name
+        setOwnerName(data.ownerName || "Unknown User");
       } catch (error) {
         console.error("Error fetching brain contents:", error);
       } finally {
@@ -53,7 +55,6 @@ export function BrainView() {
   }, [shareLink, user?.userId, BACKEND_URL]);
 
   const handleContentAdded = async () => {
-    // Refresh contents after adding new content
     try {
       const response = await fetch(`${BACKEND_URL}/api/v1/brain/${shareLink}`);
       if (!response.ok) {
@@ -86,7 +87,6 @@ export function BrainView() {
         throw new Error("Failed to update content");
       }
 
-      // Update local state
       setContents((prevContents) =>
         prevContents.map((content) =>
           content.id === contentId ? { ...content, ...newData } : content
@@ -110,7 +110,6 @@ export function BrainView() {
         throw new Error("Failed to delete content");
       }
 
-      // Update local state
       setContents((prevContents) =>
         prevContents.filter((content) => content.id !== contentId)
       );
@@ -135,25 +134,38 @@ export function BrainView() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <Header
-        openAddContentModal={() => setIsAddContentOpen(true)}
-        showControls={isOwner}
-      />
-
       <div className="flex">
-        {/* Sidebar */}
-        <Sidebar
-          isCollapsed={isSidebarCollapsed}
-          setIsCollapsed={setIsSidebarCollapsed}
-          activeFilter={activeFilter}
-          onFilterChange={setActiveFilter}
-        />
-
-        {/* Main Content */}
-        <main
-          className={`flex-1 p-8 ${isSidebarCollapsed ? "ml-16" : "ml-16"}`}
-        >
+        {isOwner && (
+          <Sidebar
+            isCollapsed={isSidebarCollapsed}
+            setIsCollapsed={setIsSidebarCollapsed}
+            activeFilter={activeFilter}
+            onFilterChange={setActiveFilter}
+          />
+        )}
+        <main className={`flex-1 p-8 ${isOwner && isSidebarCollapsed ? "ml-16" : ""}`}>
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">
+                  {isOwner ? "My Brain" : `${ownerName}'s Brain`}
+                </h1>
+                <p className="text-gray-500 text-sm mt-1">
+                  {filteredContents.length} items {activeFilter !== "all" && `• ${activeFilter} filter active`}
+                </p>
+              </div>
+              
+              {isOwner && (
+                <button
+                  onClick={() => setIsAddContentOpen(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md shadow-sm transition-colors"
+                >
+                  Add Content
+                </button>
+              )}
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredContents.map((content) => (
               <NoteCard
@@ -169,9 +181,7 @@ export function BrainView() {
                     : new Date().toLocaleDateString()
                 }
                 onEdit={
-                  isOwner
-                    ? (newData) => handleContentEdit(content.id, newData)
-                    : undefined
+                  isOwner ? (newData) => handleContentEdit(content.id, newData) : undefined
                 }
                 onDelete={
                   isOwner ? () => handleContentDelete(content.id) : undefined
@@ -186,8 +196,6 @@ export function BrainView() {
           )}
         </main>
       </div>
-
-      {/* Add Content Modal */}
       {isOwner && isAddContentOpen && (
         <AddContentModal
           onClose={() => setIsAddContentOpen(false)}

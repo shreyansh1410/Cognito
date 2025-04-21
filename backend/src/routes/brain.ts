@@ -2,7 +2,7 @@ import express from "express";
 import { Request, Response } from "../../index";
 import dotenv from "dotenv";
 import { userMiddleware } from "../middlewares/authMiddleware";
-import { Content, Link } from "../db";
+import { Content, Link, User } from "../db";
 import { generateHash } from "./user";
 
 dotenv.config();
@@ -12,9 +12,6 @@ const router = express.Router();
 router.get("/", async (req: Request, res: Response): Promise<any> => {
   res.send("Hello");
 });
-
-const baseUrl =
-  `${process.env.BASE_URL}/api/v1` || "http://localhost:3000/api/v1";
 
 const frontendUrl =
   `${process.env.FRONTEND_URL}/api/v1` ||
@@ -53,14 +50,12 @@ router.post(
         await link.save();
       }
       if (!link.hash) {
-        // If somehow hash is missing, generate a new one
         link.hash = generateHash();
         await link.save();
       }
 
       return res.status(200).json({
         msg: "Brain share link retrieved successfully",
-        shareLink: `${frontendUrl}/brain/${link.hash}`,
         hash: link.hash,
       });
     } catch (err) {
@@ -74,12 +69,10 @@ router.post(
 );
 
 router.get("/:shareLink", async (req: Request, res: Response): Promise<any> => {
-  // if (!req.user?.id)
-  //   return res.status(404).json({
-  //     msg: "Please log in to see the brain",
-  //   });
   try {
+    console.log("hello");
     const { shareLink } = req.params;
+    
     const link = await Link.findOne({
       hash: shareLink,
     });
@@ -89,7 +82,9 @@ router.get("/:shareLink", async (req: Request, res: Response): Promise<any> => {
         msg: "User not found",
       });
     }
+    
     const userId = link.userId;
+    
     const contents = await Content.find({
       userId: link.userId,
     }).populate("tags", "title");
@@ -100,7 +95,17 @@ router.get("/:shareLink", async (req: Request, res: Response): Promise<any> => {
       });
     }
 
-    return res.status(200).json({
+    let ownerName = "Unknown User";
+    try {
+      const owner = await User.findById(userId.toString());
+      if (owner) {
+        ownerName = owner.firstName || owner.email || "Unknown User";
+      }
+    } catch (err) {
+      console.error("Error fetching user:", err);
+    }
+
+    const response = {
       contents: contents.map((content) => ({
         id: content._id.toString(),
         type: content.type,
@@ -109,10 +114,17 @@ router.get("/:shareLink", async (req: Request, res: Response): Promise<any> => {
         tags: content.tags.map((tag: any) => tag.title),
         createdAt: content.createdAt,
       })),
-      userId: userId,
-    });
+      userId: userId.toString(),
+      ownerName: ownerName
+    };
+    
+    return res.status(200).json(response);
   } catch (err) {
-    console.error(err);
+    console.error("Error in /:shareLink route:", err);
+    return res.status(500).json({
+      msg: "An error occurred",
+      error: err instanceof Error ? err.message : String(err)
+    });
   }
 });
 

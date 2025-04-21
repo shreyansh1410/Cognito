@@ -76,7 +76,6 @@ router.post("/signup", async (req: Request, res: Response): Promise<any> => {
       hash,
     });
   } catch (err: any) {
-    console.error("Signup error:", err); // Log full error
     return res.status(500).json({
       msg: "Error creating user",
       error: err.message,
